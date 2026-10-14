@@ -4,7 +4,7 @@
 
 ## 使い方
 
-[GitHub Pagesで公開中のページ](https://amanosaaan.github.io/babysitter-fee-tracker/) を開くだけで使えます。インストールやログインは不要です。
+[GitHub Pagesで公開中のページ](https://mizuho-works.github.io/babysitter-fee-tracker/) を開くだけで使えます。インストールやログインは不要です。
 
 ## 主な機能
 
