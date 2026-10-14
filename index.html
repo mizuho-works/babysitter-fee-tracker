@@ -19,6 +19,10 @@
     --father-soft:#e4ecdf;
     --svc2:#7c6bb5;
     --svc2-soft:#e2ddf0;
+    --sat:#4a7fbf;
+    --sat-bg:#e9f0fa;
+    --sun:#c25b5b;
+    --sun-bg:#fbeaea;
     --shadow:0 2px 8px rgba(60,45,30,0.06);
   }
   @media (prefers-color-scheme: dark){
@@ -36,6 +40,10 @@
       --father-soft:#2c3628;
       --svc2:#a99bd9;
       --svc2-soft:#332c4a;
+      --sat:#7fa8dc;
+      --sat-bg:#1f2733;
+      --sun:#e48a8a;
+      --sun-bg:#33201f;
       --shadow:0 2px 10px rgba(0,0,0,0.35);
     }
   }
@@ -193,8 +201,13 @@
   th{color:var(--sub);font-weight:600;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.03em;}
   td.num{text-align:right;font-variant-numeric:tabular-nums;}
   th.num{text-align:right;}
-  tr.sun td.dow-cell{color:#c25b5b;}
-  tr.sat td.dow-cell{color:#4a7fbf;}
+  tr.sun td.dow-cell,tr.hol td.dow-cell{color:var(--sun);font-weight:600;}
+  tr.sat td.dow-cell{color:var(--sat);font-weight:600;}
+  tr.sun,tr.hol{background:var(--sun-bg);}
+  tr.sat{background:var(--sat-bg);}
+  tr.father.sun td.dow-cell,tr.father.hol td.dow-cell{color:var(--sun);}
+  tr.father.sat td.dow-cell{color:var(--sat);}
+  .hol-tag{display:inline-block;margin-left:3px;padding:0 4px;border-radius:4px;background:var(--sun);color:var(--card);font-size:0.68rem;font-weight:700;line-height:1.4;}
   tr.father td{color:var(--father);}
   tr.father td.dow-cell{color:var(--sub);}
   .assignment-select{
@@ -290,22 +303,58 @@
   .cal-cell.blank{border-color:transparent;background:transparent;}
   .cal-cell.tentative{border-style:dashed;}
   .cal-tentative-tag{position:absolute;top:3px;right:5px;font-size:0.58rem;color:var(--sub);}
-  .cal-cell.has-entry,.cal-cell.has-father{cursor:pointer;}
+  .cal-cell:not(.blank){cursor:pointer;}
+  .cal-cell:not(.blank):hover{border-color:var(--sub);}
+  .cal-cell.day-sat:not(.has-entry):not(.has-father){background:var(--sat-bg);}
+  .cal-cell.day-off:not(.has-entry):not(.has-father){background:var(--sun-bg);}
+  .cal-cell.day-sat .cal-daynum{color:var(--sat);}
+  .cal-cell.day-off .cal-daynum{color:var(--sun);}
+  .cal-hbadge{
+    display:inline-block;
+    margin-left:3px;
+    padding:0 3px;
+    border-radius:4px;
+    background:var(--sun);
+    color:var(--card);
+    font-size:0.56rem;
+    font-weight:700;
+    line-height:1.4;
+    vertical-align:1px;
+  }
+  .cal-hname{font-size:0.56rem;color:var(--sun);margin-top:1px;word-break:break-all;line-height:1.25;}
   .cal-cell.msg-selected{box-shadow:0 0 0 2px var(--ink) inset;}
-  .cal-cell.msg-selected::before{
+  .cal-cell.msg-selected::after{
     content:"✓";
     position:absolute;
-    top:3px;
-    left:5px;
-    width:13px;height:13px;
+    bottom:3px;
+    right:4px;
+    width:14px;height:14px;
     border-radius:50%;
     background:var(--ink);
     color:var(--card);
-    font-size:0.6rem;
+    font-size:0.62rem;
     font-weight:700;
-    line-height:13px;
+    line-height:14px;
     text-align:center;
   }
+  .cal-actionbar{
+    position:sticky;
+    bottom:10px;
+    z-index:5;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:14px;
+    padding:10px 12px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.12);
+  }
+  .cal-actionbar .sel-count{font-size:0.85rem;color:var(--sub);flex:1;min-width:90px;}
+  .cal-actionbar .sel-count b{color:var(--ink);font-size:1rem;}
+  .cal-more{display:flex;justify-content:center;margin-top:12px;}
   .cal-cell.has-entry.svc-accent{background:var(--accent-soft);border-color:var(--accent);}
   .cal-cell.has-entry.svc-svc2{background:var(--svc2-soft);border-color:var(--svc2);}
   .cal-cell.has-father:not(.has-entry){
@@ -313,7 +362,8 @@
     border-color:var(--father);
   }
   .cal-daynum{font-size:0.78rem;color:var(--sub);}
-  .cal-cell.has-entry .cal-daynum,.cal-cell.has-father .cal-daynum{color:var(--ink);font-weight:600;}
+  .cal-cell.has-entry .cal-daynum,.cal-cell.has-father .cal-daynum{font-weight:600;}
+  .cal-cell.has-entry:not(.day-sat):not(.day-off) .cal-daynum,.cal-cell.has-father:not(.day-sat):not(.day-off) .cal-daynum{color:var(--ink);}
   .cal-amount{font-size:0.78rem;font-weight:700;margin-top:4px;}
   .cal-cell.svc-accent .cal-amount{color:var(--accent);}
   .cal-cell.svc-svc2 .cal-amount{color:var(--svc2);}
@@ -347,6 +397,10 @@
     .cal-head{font-size:0.64rem;}
     .grand-total .gt-amt{font-size:1.4rem;}
     .assignment-select{max-width:100px;font-size:0.72rem;}
+    .cal-actionbar{padding:8px 10px;gap:6px;bottom:6px;}
+    .cal-actionbar .sel-count{flex-basis:100%;min-width:0;font-size:0.78rem;}
+    .cal-actionbar .sel-count b{font-size:0.9rem;}
+    .cal-actionbar button{flex:1 1 0;min-width:0;padding:9px 4px;font-size:0.74rem;white-space:nowrap;}
   }
   .preview-modal{
     position:fixed;
@@ -484,10 +538,18 @@
   <div class="card">
     <h2><span class="step-badge">4</span>カレンダー表示</h2>
     <div class="hint-box">
-      日付のマスをクリックすると、⑦の依頼メッセージ作成で使う「選択」に追加/解除できます(③結果のチェックボックスと連動します)。
+      日付のマスをクリックして選択し(✓が付きます)、下のボタンで「メッセージ作成」か「予定として登録」を選べます。まだ予定がない日も選べます。土曜は青、日曜・祝日は赤で表示されます。
     </div>
     <div id="calendarContainer"></div>
-    <div id="calendarEmptyHint" class="empty-hint" style="display:none;">まだ対象日がありません。</div>
+    <div class="cal-more">
+      <button class="btn-ghost" id="calendarMoreBtn">さらに先の月を表示</button>
+    </div>
+    <div class="cal-actionbar">
+      <span class="sel-count">選択中: <b id="selCount">0</b>日</span>
+      <button class="btn-primary" id="calMessageBtn">メッセージを作成</button>
+      <button class="btn-primary" id="calRegisterBtn">予定として登録</button>
+      <button class="btn-ghost" id="calClearSelBtn">選択をクリア</button>
+    </div>
     <div class="btn-row">
       <button class="btn-ghost" id="calendarResetBtn">カレンダーをリセット</button>
     </div>
@@ -516,7 +578,7 @@
   <div class="card">
     <h2><span class="step-badge">7</span>依頼メッセージを作成</h2>
     <div class="hint-box">
-      ③結果やカレンダーで「選択」した日付をもとに、依頼メッセージを作成します。
+      ④カレンダーの日付をクリックして選択(または③結果の「選択」にチェック)し、そのまま依頼メッセージを作成できます。まだ予定に登録していない日でも作成できます。
     </div>
     <div class="btn-row">
       <button class="btn-primary" id="buildCustomMessageBtn">選択した日付でメッセージを作成</button>
@@ -641,7 +703,72 @@ function migrateEntry(e){
 let services = loadServices();
 let assignmentNames = loadAssignmentNames();
 let entries = loadArray(STORAGE_ENTRIES).map(migrateEntry);
-const selectedForMessage = new Set();
+const selectedDates = new Set();
+let calendarExtraMonths = 0;
+
+const _holidayCache = {};
+function getJapaneseHolidays(year){
+  if(_holidayCache[year]) return _holidayCache[year];
+  const map = new Map();
+  const key = (m,d)=>`${m}-${d}`;
+  const add = (m,d,name)=>map.set(key(m,d), name);
+  const nthMonday = (m,n)=>{
+    const first = new Date(year, m-1, 1).getDay();
+    return 1 + ((8 - first) % 7) + (n-1)*7;
+  };
+  add(1,1,"元日");
+  add(1,nthMonday(1,2),"成人の日");
+  add(2,11,"建国記念の日");
+  if(year >= 2020) add(2,23,"天皇誕生日");
+  const base = year - 1980;
+  add(3, Math.floor(20.8431 + 0.242194*base - Math.floor(base/4)), "春分の日");
+  add(4,29,"昭和の日");
+  add(5,3,"憲法記念日");
+  add(5,4,"みどりの日");
+  add(5,5,"こどもの日");
+  add(7,nthMonday(7,3),"海の日");
+  add(8,11,"山の日");
+  add(9,nthMonday(9,3),"敬老の日");
+  add(9, Math.floor(23.2488 + 0.242194*base - Math.floor(base/4)), "秋分の日");
+  add(10,nthMonday(10,2),"スポーツの日");
+  add(11,3,"文化の日");
+  add(11,23,"勤労感謝の日");
+
+  const isHol = (dt)=>map.has(key(dt.getMonth()+1, dt.getDate()));
+  const addDays = (dt,n)=>new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()+n);
+  const sorted = [...map.keys()].map(k=>{
+    const [m,d] = k.split("-").map(Number);
+    return new Date(year, m-1, d);
+  });
+  sorted.forEach(dt=>{
+    const next = addDays(dt,1), after = addDays(dt,2);
+    if(next.getFullYear()===year && !isHol(next) && isHol(after) && next.getDay()!==0){
+      add(next.getMonth()+1, next.getDate(), "国民の休日");
+    }
+  });
+  [...map.keys()].forEach(k=>{
+    const [m,d] = k.split("-").map(Number);
+    let dt = new Date(year, m-1, d);
+    if(dt.getDay() === 0){
+      dt = addDays(dt,1);
+      while(isHol(dt)) dt = addDays(dt,1);
+      if(dt.getFullYear()===year) add(dt.getMonth()+1, dt.getDate(), "振替休日");
+    }
+  });
+  _holidayCache[year] = map;
+  return map;
+}
+function holidayName(year, month, day){
+  return getJapaneseHolidays(year).get(`${month}-${day}`) || null;
+}
+function dayKindClasses(year, month, day){
+  const dow = new Date(year, month-1, day).getDay();
+  const hol = holidayName(year, month, day);
+  const classes = [];
+  if(dow === 6) classes.push("sat");
+  if(dow === 0 || hol) classes.push("off");
+  return { dow, hol, classes };
+}
 
 function saveAll(){
   localStorage.setItem(STORAGE_SERVICES, JSON.stringify(services));
@@ -829,9 +956,6 @@ function renderEntries(){
   const emptyHint = document.getElementById("emptyHint");
   body.innerHTML = "";
 
-  const validIds = new Set(entries.map(en=>en.id));
-  [...selectedForMessage].forEach(id=>{ if(!validIds.has(id)) selectedForMessage.delete(id); });
-
   const sorted = [...entries].sort((a,b)=>{
     if(a.year !== b.year) return a.year - b.year;
     if(a.month !== b.month) return a.month - b.month;
@@ -842,10 +966,16 @@ function renderEntries(){
 
   sorted.forEach(entry=>{
     const tr = document.createElement("tr");
-    if(entry.assignment === "father") tr.className = "father";
-    else if(DOW_CLASS[entry.dow]) tr.className = DOW_CLASS[entry.dow];
+    const kind = dayKindClasses(entry.year, entry.month, entry.day);
+    const classes = [];
+    if(entry.assignment === "father") classes.push("father");
+    if(entry.dow === "土") classes.push("sat");
+    if(entry.dow === "日") classes.push("sun");
+    if(kind.hol) classes.push("hol");
     const isOverridden = entry.assignment !== "father" && entry.assignment !== defaultAssignment(entry.dow);
-    if(isOverridden) tr.className += " service-overridden";
+    if(isOverridden) classes.push("service-overridden");
+    tr.className = classes.join(" ");
+    const holTag = kind.hol ? `<span class="hol-tag" title="${kind.hol}">祝</span>` : "";
 
     const rate = entryRate(entry);
     const isFamisapo = entry.assignment !== "father" && entry.assignment !== "babysitter";
@@ -861,12 +991,12 @@ function renderEntries(){
 
     tr.innerHTML = `
       <td>${entry.label}</td>
-      <td class="dow-cell">${entry.dow}</td>
+      <td class="dow-cell">${entry.dow}${holTag}</td>
       <td>${assignmentSelectHtml}</td>
       <td>${hoursHtml}</td>
       <td class="num">¥${rate.toLocaleString()}</td>
       <td><input type="checkbox" class="confirm-checkbox" data-id="${entry.id}" ${entry.confirmed ? "checked" : ""}></td>
-      <td><input type="checkbox" class="select-checkbox" data-id="${entry.id}" ${selectedForMessage.has(entry.id) ? "checked" : ""}></td>
+      <td><input type="checkbox" class="select-checkbox" data-id="${entry.id}" ${selectedDates.has(dateKey(entry)) ? "checked" : ""}></td>
       <td><button class="remove-btn" data-id="${entry.id}" title="削除">×</button></td>
     `;
     body.appendChild(tr);
@@ -907,9 +1037,10 @@ function renderEntries(){
 
   body.querySelectorAll(".select-checkbox").forEach(cb=>{
     cb.addEventListener("change", e=>{
-      const id = e.target.dataset.id;
-      if(e.target.checked) selectedForMessage.add(id);
-      else selectedForMessage.delete(id);
+      const entry = entries.find(en=>en.id === e.target.dataset.id);
+      if(!entry) return;
+      if(e.target.checked) selectedDates.add(dateKey(entry));
+      else selectedDates.delete(dateKey(entry));
       renderCalendar();
     });
   });
@@ -944,18 +1075,38 @@ function serviceColorKeyForAssignment(assignment){
   return assignment === "babysitter" ? "svc2" : "accent";
 }
 
+function getDisplayGroups(){
+  const groups = new Map();
+  const ensure = (year, month)=>{
+    const key = `${year}-${month}`;
+    if(!groups.has(key)) groups.set(key, {year, month, byDay: new Map()});
+    return groups.get(key);
+  };
+  const now = new Date();
+  for(let i=0; i<=2+calendarExtraMonths; i++){
+    const d = new Date(now.getFullYear(), now.getMonth()+i, 1);
+    ensure(d.getFullYear(), d.getMonth()+1);
+  }
+  entries.forEach(entry=>{
+    const g = ensure(entry.year, entry.month);
+    const list = g.byDay.get(entry.day) || [];
+    list.push(entry);
+    g.byDay.set(entry.day, list);
+  });
+  return [...groups.values()].sort((a,b)=> a.year !== b.year ? a.year - b.year : a.month - b.month);
+}
+
+function updateSelectionCount(){
+  const el = document.getElementById("selCount");
+  if(el) el.textContent = selectedDates.size;
+}
+
 function renderCalendar(){
   const container = document.getElementById("calendarContainer");
-  const emptyHint = document.getElementById("calendarEmptyHint");
   container.innerHTML = "";
+  updateSelectionCount();
 
-  if(entries.length === 0){
-    emptyHint.style.display = "block";
-    return;
-  }
-  emptyHint.style.display = "none";
-
-  const groupList = getCalendarGroups();
+  const groupList = getDisplayGroups();
   const hasFamisapo = entries.some(en=>en.assignment !== "father" && en.assignment !== "babysitter");
   const hasBabysitter = entries.some(en=>en.assignment === "babysitter");
   const hasFatherEntries = entries.some(en=>en.assignment === "father");
@@ -968,6 +1119,8 @@ function renderCalendar(){
     if(hasBabysitter) legendHtml += `<span class="legend-item"><span class="legend-dot svc-svc2"></span>ベビーシッター</span>`;
     if(hasFatherEntries) legendHtml += `<span class="legend-item"><span class="legend-dot legend-father"></span>父</span>`;
     legendHtml += `<span class="legend-item">実線=確定 / 点線=予定</span>`;
+    legendHtml += `<span class="legend-item"><span style="color:var(--sat);font-weight:700;">土</span>=青</span>`;
+    legendHtml += `<span class="legend-item"><span style="color:var(--sun);font-weight:700;">日・祝</span>=赤</span>`;
     legend.innerHTML = legendHtml;
     container.appendChild(legend);
   }
@@ -1010,8 +1163,12 @@ function renderCalendar(){
         svcClass = ` svc-${serviceColorKeyForAssignment(payableToday[0].assignment)}`;
       }
       const allConfirmed = dayEntries.length > 0 && dayEntries.every(en=>en.confirmed);
-      const allSelected = dayEntries.length > 0 && dayEntries.every(en=>selectedForMessage.has(en.id));
-      cell.className = "cal-cell" + (payableToday.length ? ` has-entry${svcClass}` : "") + (hasFather ? " has-father" : "") + (dayEntries.length && !allConfirmed ? " tentative" : "") + (allSelected ? " msg-selected" : "");
+      const dKey = `${g.year}-${g.month}-${day}`;
+      const kind = dayKindClasses(g.year, g.month, day);
+      const kindClass = (kind.classes.includes("sat") ? " day-sat" : "") + (kind.classes.includes("off") ? " day-off" : "");
+      const selClass = selectedDates.has(dKey) ? " msg-selected" : "";
+      cell.className = "cal-cell" + (payableToday.length ? ` has-entry${svcClass}` : "") + (hasFather ? " has-father" : "") + (dayEntries.length && !allConfirmed ? " tentative" : "") + kindClass + selClass;
+      const holBadge = kind.hol ? `<span class="cal-hbadge" title="${kind.hol}">祝</span>` : "";
       if(dayEntries.length){
         const total = payableToday.reduce((sum,en)=> sum + entryRate(en), 0);
         const labelParts = [...new Set(payableToday.map(en=> assignmentShortLabel(en.assignment)))];
@@ -1019,21 +1176,21 @@ function renderCalendar(){
         const labelText = labelParts.join("/");
         cell.innerHTML = `
           ${!allConfirmed ? `<div class="cal-tentative-tag">予定</div>` : ""}
-          <div class="cal-daynum">${day}</div>
+          <div class="cal-daynum">${day}${holBadge}</div>
           ${payableToday.length ? `<div class="cal-amount">¥${total.toLocaleString()}</div>` : ""}
           ${labelText ? `<div class="cal-label">${labelText}</div>` : ""}
         `;
-        cell.addEventListener("click", ()=>{
-          const nowAllSelected = dayEntries.every(en=>selectedForMessage.has(en.id));
-          dayEntries.forEach(en=>{
-            if(nowAllSelected) selectedForMessage.delete(en.id);
-            else selectedForMessage.add(en.id);
-          });
-          renderEntries();
-        });
       } else {
-        cell.innerHTML = `<div class="cal-daynum">${day}</div>`;
+        cell.innerHTML = `
+          <div class="cal-daynum">${day}${holBadge}</div>
+          ${kind.hol ? `<div class="cal-hname">${kind.hol}</div>` : ""}
+        `;
       }
+      cell.addEventListener("click", ()=>{
+        if(selectedDates.has(dKey)) selectedDates.delete(dKey);
+        else selectedDates.add(dKey);
+        renderEntries();
+      });
       grid.appendChild(cell);
     }
 
@@ -1235,6 +1392,7 @@ function clearAllEntries(){
   if(entries.length === 0) return;
   showConfirm("入力済みの対象日を全て削除します。よろしいですか?", ()=>{
     entries = [];
+    selectedDates.clear();
     saveAll();
     renderEntries();
   });
@@ -1270,16 +1428,72 @@ document.getElementById("refreshFromSheetBtn").addEventListener("click", async (
   }
 });
 
-document.getElementById("buildCustomMessageBtn").addEventListener("click", ()=>{
-  const selected = entries.filter(en=>selectedForMessage.has(en.id));
-  if(selected.length === 0){
-    showAlert("③結果で「選択」にチェックを入れてから作成してください。");
+function makeEntryOn(year, month, day){
+  const dow = computeDow(year, month, day);
+  return {
+    id: `${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+    year, month, day, dow,
+    assignment: defaultAssignment(dow),
+    hours: defaultHours(dow),
+    confirmed: false,
+    label: `${month}/${day}`
+  };
+}
+
+function entriesForSelectedDates(){
+  const list = [];
+  [...selectedDates].forEach(k=>{
+    const [y,m,d] = k.split("-").map(Number);
+    const found = entries.filter(en=>en.year===y && en.month===m && en.day===d);
+    if(found.length) list.push(...found);
+    else list.push(makeEntryOn(y,m,d));
+  });
+  return list;
+}
+
+function buildMessageFromSelection(){
+  if(selectedDates.size === 0){
+    showAlert("カレンダーの日付をクリックして選択してから作成してください。");
     return;
   }
-  const message = buildRequestMessage(selected);
+  const message = buildRequestMessage(entriesForSelectedDates());
   const container = document.getElementById("customMessageResult");
   container.innerHTML = "";
   container.appendChild(buildMessageBlock(null, message));
+  container.scrollIntoView({behavior:"smooth", block:"center"});
+}
+
+function registerSelectedDates(){
+  if(selectedDates.size === 0){
+    showAlert("カレンダーの日付をクリックして選択してから登録してください。");
+    return;
+  }
+  let added = 0, skipped = 0;
+  [...selectedDates].forEach(k=>{
+    if(entries.some(en=>dateKey(en) === k)){ skipped++; return; }
+    const [y,m,d] = k.split("-").map(Number);
+    entries.push(makeEntryOn(y,m,d));
+    added++;
+  });
+  if(added === 0){
+    showAlert("選択した日付はすべて登録済みです。");
+    return;
+  }
+  saveAll();
+  renderEntries();
+  showAlert(`${added}件を予定として登録しました${skipped ? `(${skipped}件は登録済み)` : ""}。`);
+}
+
+document.getElementById("buildCustomMessageBtn").addEventListener("click", buildMessageFromSelection);
+document.getElementById("calMessageBtn").addEventListener("click", buildMessageFromSelection);
+document.getElementById("calRegisterBtn").addEventListener("click", registerSelectedDates);
+document.getElementById("calClearSelBtn").addEventListener("click", ()=>{
+  selectedDates.clear();
+  renderEntries();
+});
+document.getElementById("calendarMoreBtn").addEventListener("click", ()=>{
+  calendarExtraMonths++;
+  renderCalendar();
 });
 
 function roundRect(ctx,x,y,w,h,r){
@@ -1398,6 +1612,18 @@ function buildExportCanvas(){
       ctx.fillStyle = colors.sub;
       ctx.font = "400 11px sans-serif";
       ctx.fillText("実線=確定 / 点線=予定", lx, ly+4);
+      lx += ctx.measureText("実線=確定 / 点線=予定").width + 16;
+      ctx.fillStyle = colors.sat;
+      ctx.fillText("土", lx, ly+4);
+      lx += ctx.measureText("土").width + 2;
+      ctx.fillStyle = colors.sub;
+      ctx.fillText("=青", lx, ly+4);
+      lx += ctx.measureText("=青").width + 12;
+      ctx.fillStyle = colors.sun;
+      ctx.fillText("日・祝", lx, ly+4);
+      lx += ctx.measureText("日・祝").width + 2;
+      ctx.fillStyle = colors.sub;
+      ctx.fillText("=赤", lx, ly+4);
       y += legendH;
     }
 
@@ -1428,7 +1654,11 @@ function buildExportCanvas(){
         const h = cellH - 6;
 
         const svcHex = payableToday.length ? svcHexFor(payableToday[0].assignment) : svcHexFor(null);
-        const bgFill = payableToday.length ? svcHex.soft : (hasFather ? colors.fatherSoft : colors.card);
+        const kind = dayKindClasses(g.year, g.month, day);
+        const isSat = kind.classes.includes("sat");
+        const isOff = kind.classes.includes("off");
+        const plainBg = isOff ? "#fbeaea" : (isSat ? "#e9f0fa" : colors.card);
+        const bgFill = payableToday.length ? svcHex.soft : (hasFather ? colors.fatherSoft : plainBg);
         const borderColor = payableToday.length ? svcHex.c : (hasFather ? colors.father : colors.line);
         const allConfirmed = dayEntries.length > 0 && dayEntries.every(en=>en.confirmed);
         ctx.fillStyle = bgFill;
@@ -1441,9 +1671,23 @@ function buildExportCanvas(){
         ctx.stroke();
         ctx.setLineDash([]);
 
-        ctx.fillStyle = dayEntries.length ? colors.ink : colors.sub;
-        ctx.font = dayEntries.length ? "700 11px sans-serif" : "400 11px sans-serif";
+        ctx.fillStyle = isOff ? colors.sun : (isSat ? colors.sat : (dayEntries.length ? colors.ink : colors.sub));
+        ctx.font = (dayEntries.length || isOff || isSat) ? "700 11px sans-serif" : "400 11px sans-serif";
         ctx.fillText(String(day), cx+8, cy+18);
+        if(kind.hol){
+          const numW = ctx.measureText(String(day)).width;
+          ctx.fillStyle = colors.sun;
+          roundRect(ctx, cx+8+numW+3, cy+8, 13, 12, 3);
+          ctx.fill();
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "700 8px sans-serif";
+          ctx.fillText("祝", cx+8+numW+5, cy+17);
+          if(!dayEntries.length){
+            ctx.fillStyle = colors.sun;
+            ctx.font = "400 8px sans-serif";
+            ctx.fillText(kind.hol.length > 7 ? kind.hol.slice(0,7) : kind.hol, cx+8, cy+32);
+          }
+        }
 
         if(dayEntries.length && !allConfirmed){
           ctx.fillStyle = colors.sub;
