@@ -68,6 +68,21 @@ function doGet(e){
 }
 
 function doPost(e){
+  // Serialize writes: overlapping executions used to interleave clear/append and duplicate rows.
+  const lock = LockService.getScriptLock();
+  try{
+    lock.waitLock(30000);
+  }catch(lockErr){
+    return jsonOut_({ ok:false, error: "busy" });
+  }
+  try{
+    return handlePost_(e);
+  }finally{
+    lock.releaseLock();
+  }
+}
+
+function handlePost_(e){
   try{
     const body = JSON.parse(e.postData.contents);
     const action = body.action;
@@ -92,12 +107,16 @@ function doPost(e){
     }
 
     if(action === "replaceAll"){
-      const entries = body.entries || [];
-      sheet.clearContents();
-      sheet.appendRow(HEADERS);
-      entries.forEach(entry=>{
-        sheet.appendRow(HEADERS.map(h => entry[h] !== undefined ? entry[h] : ""));
+      const seen = {};
+      const entries = (body.entries || []).filter(entry=>{
+        if(seen[entry.id]) return false;
+        seen[entry.id] = true;
+        return true;
       });
+      sheet.clearContents();
+      const rows = [HEADERS].concat(entries.map(entry=> HEADERS.map(h => entry[h] !== undefined ? entry[h] : "")));
+      ensureTextFormat_(sheet);
+      sheet.getRange(1, 1, rows.length, HEADERS.length).setValues(rows);
       return jsonOut_({ ok:true });
     }
 

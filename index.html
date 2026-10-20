@@ -17,12 +17,13 @@
     --danger:#b3543f;
     --father:#5f8a5a;
     --father-soft:#e4ecdf;
+    --daiki:#2f8f9d;
+    --daiki-soft:#dcf0f2;
     --svc2:#7c6bb5;
     --svc2-soft:#e2ddf0;
     --sat:#4a7fbf;
-    --sat-bg:#e9f0fa;
     --sun:#c25b5b;
-    --sun-bg:#fbeaea;
+    --confirm-bg:#e6f2e4;
     --shadow:0 2px 8px rgba(60,45,30,0.06);
   }
   @media (prefers-color-scheme: dark){
@@ -38,12 +39,13 @@
       --danger:#e08a7a;
       --father:#8fbf88;
       --father-soft:#2c3628;
+      --daiki:#6cc3cf;
+      --daiki-soft:#1f3438;
       --svc2:#a99bd9;
       --svc2-soft:#332c4a;
       --sat:#7fa8dc;
-      --sat-bg:#1f2733;
       --sun:#e48a8a;
-      --sun-bg:#33201f;
+      --confirm-bg:#223225;
       --shadow:0 2px 10px rgba(0,0,0,0.35);
     }
   }
@@ -203,13 +205,16 @@
   th.num{text-align:right;}
   tr.sun td.dow-cell,tr.hol td.dow-cell{color:var(--sun);font-weight:600;}
   tr.sat td.dow-cell{color:var(--sat);font-weight:600;}
-  tr.sun,tr.hol{background:var(--sun-bg);}
-  tr.sat{background:var(--sat-bg);}
+  tr.confirmed{background:var(--confirm-bg);}
   tr.father.sun td.dow-cell,tr.father.hol td.dow-cell{color:var(--sun);}
   tr.father.sat td.dow-cell{color:var(--sat);}
   .hol-tag{display:inline-block;margin-left:3px;padding:0 4px;border-radius:4px;background:var(--sun);color:var(--card);font-size:0.68rem;font-weight:700;line-height:1.4;}
   tr.father td{color:var(--father);}
   tr.father td.dow-cell{color:var(--sub);}
+  tr.daiki td{color:var(--daiki);}
+  tr.daiki td.dow-cell{color:var(--sub);}
+  tr.daiki.sun td.dow-cell,tr.daiki.hol td.dow-cell{color:var(--sun);}
+  tr.daiki.sat td.dow-cell{color:var(--sat);}
   .assignment-select{
     font-size:0.78rem;
     padding:4px 6px;
@@ -305,8 +310,6 @@
   .cal-tentative-tag{position:absolute;top:3px;right:5px;font-size:0.58rem;color:var(--sub);}
   .cal-cell:not(.blank){cursor:pointer;}
   .cal-cell:not(.blank):hover{border-color:var(--sub);}
-  .cal-cell.day-sat:not(.has-entry):not(.has-father){background:var(--sat-bg);}
-  .cal-cell.day-off:not(.has-entry):not(.has-father){background:var(--sun-bg);}
   .cal-cell.day-sat .cal-daynum{color:var(--sat);}
   .cal-cell.day-off .cal-daynum{color:var(--sun);}
   .cal-hbadge{
@@ -374,14 +377,20 @@
     background:var(--father-soft);
     border-color:var(--father);
   }
+  .cal-cell.has-daiki:not(.has-entry){
+    background:var(--daiki-soft);
+    border-color:var(--daiki);
+  }
   .cal-daynum{font-size:0.78rem;color:var(--sub);}
-  .cal-cell.has-entry .cal-daynum,.cal-cell.has-father .cal-daynum{font-weight:600;}
-  .cal-cell.has-entry:not(.day-sat):not(.day-off) .cal-daynum,.cal-cell.has-father:not(.day-sat):not(.day-off) .cal-daynum{color:var(--ink);}
+  .cal-cell.has-entry .cal-daynum,.cal-cell.has-father .cal-daynum,.cal-cell.has-daiki .cal-daynum{font-weight:600;}
+  .cal-cell.has-entry:not(.day-sat):not(.day-off) .cal-daynum,.cal-cell.has-father:not(.day-sat):not(.day-off) .cal-daynum,.cal-cell.has-daiki:not(.day-sat):not(.day-off) .cal-daynum{color:var(--ink);}
   .cal-amount{font-size:0.78rem;font-weight:700;margin-top:4px;}
   .cal-cell.svc-accent .cal-amount{color:var(--accent);}
   .cal-cell.svc-svc2 .cal-amount{color:var(--svc2);}
   .cal-label{font-size:0.66rem;color:var(--sub);margin-top:1px;word-break:break-word;}
   .cal-cell.has-father:not(.has-entry) .cal-label{color:var(--father);font-weight:600;}
+  .cal-cell.has-daiki:not(.has-entry) .cal-label{color:var(--daiki);font-weight:600;}
+  .legend-dot.legend-daiki{background:var(--daiki);}
   .cal-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;font-size:0.78rem;color:var(--sub);}
   .legend-item{display:flex;align-items:center;gap:5px;}
   .legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none;}
@@ -411,9 +420,9 @@
     .grand-total .gt-amt{font-size:1.4rem;}
     .assignment-select{max-width:100px;font-size:0.72rem;}
     .cal-actionbar{padding:8px 10px;gap:6px;bottom:6px;}
-    .cal-actionbar .sel-count{flex-basis:100%;min-width:0;font-size:0.78rem;}
-    .cal-actionbar .sel-count b{font-size:0.9rem;}
-    .cal-actionbar button{flex:1 1 0;min-width:0;padding:9px 4px;font-size:0.74rem;white-space:nowrap;}
+    .cal-actionbar .sel-count{display:none;}
+    .cal-actionbar button{flex:1 1 calc(50% - 6px);min-width:0;padding:9px 6px;font-size:0.82rem;white-space:nowrap;}
+    .cal-actionbar .clr-count{display:inline;}
   }
   .preview-modal{
     position:fixed;
@@ -488,7 +497,7 @@
     <h2><span class="step-badge">2</span>対象日の入力</h2>
     <div class="hint-box">
       <code>9/19</code> のように月/日だけを1行ずつ貼り付けてください。「火曜日」などの見出し行は無視されます。曜日と年は、当月・来月・来々月のいずれかとみなして自動で判定します。曜日を指定したい場合は <code>9/19(土)</code> のように書くこともできます。同じ月の日をまとめて書きたいときは <code>9/1,2,3</code> のようにカンマ区切りでもOKです。<br>
-      「<code>父</code>」とだけ書いた行のあとに続く日付は、無料の来訪日として記録されます(合計金額には含めず、カレンダーには表示します)。
+      「<code>父</code>」とだけ書いた行のあとに続く日付は、無料の来訪日として記録されます(合計金額には含めず、カレンダーには表示します)。同じように「<code>大樹休み</code>」の行のあとに書いた日付は、大樹さんのお休みの日として記録されます。
     </div>
     <textarea id="pasteArea" placeholder="例)
 9/19
@@ -540,7 +549,7 @@
     </div>
     <div id="emptyHint" class="empty-hint" style="display:none;">まだ対象日がありません。上のフォームから追加してください。</div>
     <div class="hint-box" style="margin-top:14px;">
-      「確定」にチェックを入れた日は、カレンダーで実線・確定として表示されます。チェックがない日は点線で「予定」として表示されます。「選択」は⑦の依頼メッセージ作成で使います。
+      「確定」にチェックを入れた行は塗りつぶしで表示され、カレンダーでも実線・確定として表示されます。チェックがない日は点線で「予定」として表示されます。土曜は青、日曜・祝日は赤で「曜日」の文字色が変わります。「選択」は⑦の依頼メッセージ作成で使います。
     </div>
     <div class="btn-row">
       <button class="btn-primary" id="saveDataBtn">保存する</button>
@@ -551,7 +560,7 @@
   <div class="card">
     <h2><span class="step-badge">4</span>カレンダー表示</h2>
     <div class="hint-box">
-      基本は来月のカレンダーを表示します。◀ ▶ や月のプルダウンで別の月にも切り替えられます(他の月で選んだ日付も残ります)。日付のマスをクリックして選択し(✓が付きます)、下のボタンで「メッセージ作成」か「予定として登録」を選べます。まだ予定がない日も選べます。土曜は青、日曜・祝日は赤で表示されます。
+      基本は来月のカレンダーを表示します。◀ ▶ や月のプルダウンで別の月にも切り替えられます(他の月で選んだ日付も残ります)。日付のマスをクリックして選択し(✓が付きます)、下のボタンで「メッセージ作成」「予定として登録」「大樹休みとして登録」を選べます。まだ予定がない日も選べます。土曜は青、日曜・祝日は赤で表示されます。
     </div>
     <div class="cal-nav">
       <button class="btn-ghost" id="calPrevBtn" aria-label="前の月">◀</button>
@@ -564,7 +573,8 @@
       <span class="sel-count">選択中: <b id="selCount">0</b>日</span>
       <button class="btn-primary" id="calMessageBtn">メッセージを作成</button>
       <button class="btn-primary" id="calRegisterBtn">予定として登録</button>
-      <button class="btn-ghost" id="calClearSelBtn">選択をクリア</button>
+      <button class="btn-primary btn-daiki" id="calDaikiBtn">大樹休みとして登録</button>
+      <button class="btn-ghost" id="calClearSelBtn">選択をクリア<span class="clr-count" id="clrCount"></span></button>
     </div>
     <div class="btn-row">
       <button class="btn-ghost" id="calendarResetBtn">カレンダーをリセット</button>
@@ -624,7 +634,9 @@
 <script>
 const DOWS = ["日","月","火","水","木","金","土"];
 const DOW_CLASS = {"日":"sun","土":"sat"};
-const ASSIGNMENT_ORDER = ["tanaka","tashiro","kobayashi","father","babysitter"];
+const ASSIGNMENT_ORDER = ["tanaka","tashiro","kobayashi","father","daiki","babysitter"];
+const FREE_ASSIGNMENTS = ["father","daiki"];
+function isFree(assignment){ return FREE_ASSIGNMENTS.includes(assignment); }
 
 const DEFAULT_SERVICES = { famisapo: { ratePerHour: 700, saturdayRatePerHour: 800 }, babysitter: { rate: 3400 } };
 const DEFAULT_ASSIGNMENT_NAMES = { tanaka: "田中さん", tashiro: "田代さん", kobayashi: "小林さん" };
@@ -718,7 +730,7 @@ function migrateEntry(e){
 
 let services = loadServices();
 let assignmentNames = loadAssignmentNames();
-let entries = loadArray(STORAGE_ENTRIES).map(migrateEntry);
+let entries = healDuplicates(loadArray(STORAGE_ENTRIES).map(migrateEntry));
 const selectedDates = new Set();
 let calendarView = defaultCalendarView();
 
@@ -795,6 +807,7 @@ function saveAll(){
 
 function entryToSheetRow(entry){
   const assignmentName = entry.assignment === "father" ? "父"
+    : entry.assignment === "daiki" ? "大樹休み"
     : entry.assignment === "babysitter" ? "ベビーシッター"
     : (assignmentNames[entry.assignment] || "");
   return {
@@ -815,27 +828,72 @@ function sheetRowToEntry(row){
   };
 }
 
-async function syncEntriesToSheet(){
-  if(!SHEET_API_URL) return true;
-  try{
-    const res = await fetch(SHEET_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "replaceAll", entries: entries.map(entryToSheetRow) })
-    });
-    const data = await res.json();
-    return !!data.ok;
-  }catch(err){
-    return false;
-  }
+// Syncs are serialized: only one write is in flight at a time, and changes made
+// meanwhile are coalesced into one follow-up write of the latest state.
+// (Overlapping "replace all" writes used to interleave on the sheet and duplicate rows.)
+let _syncRunning = false;
+let _syncPending = false;
+let _syncWaiters = [];
+
+function syncEntriesToSheet(){
+  if(!SHEET_API_URL) return Promise.resolve(true);
+  return new Promise(resolve=>{
+    _syncWaiters.push(resolve);
+    if(_syncRunning){ _syncPending = true; return; }
+    runSheetSync();
+  });
 }
 
+async function runSheetSync(){
+  _syncRunning = true;
+  do{
+    _syncPending = false;
+    const waiters = _syncWaiters;
+    _syncWaiters = [];
+    let ok = false;
+    try{
+      const res = await fetch(SHEET_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "replaceAll", entries: entries.map(entryToSheetRow) })
+      });
+      const data = await res.json();
+      ok = !!data.ok;
+    }catch(err){
+      ok = false;
+    }
+    waiters.forEach(w=>w(ok));
+  }while(_syncPending);
+  _syncRunning = false;
+}
+
+// One entry per date. If duplicates sneak in (e.g. from the sheet), keep a confirmed
+// one over an unconfirmed one, otherwise the later one.
+function healDuplicates(list){
+  const byId = new Map();
+  list.forEach(e=> byId.set(e.id, e));
+  const byDate = new Map();
+  [...byId.values()].forEach(e=>{
+    const k = dateKey(e);
+    const existing = byDate.get(k);
+    if(!existing || e.confirmed || !existing.confirmed) byDate.set(k, e);
+  });
+  return [...byDate.values()];
+}
+
+let _fetchHealed = false;
 async function fetchEntriesFromSheet(){
+  _fetchHealed = false;
   if(!SHEET_API_URL) return null;
   try{
     const res = await fetch(SHEET_API_URL);
     const data = await res.json();
-    if(data.ok && Array.isArray(data.entries)) return data.entries.map(sheetRowToEntry);
+    if(data.ok && Array.isArray(data.entries)){
+      const raw = data.entries.map(sheetRowToEntry);
+      const healed = healDuplicates(raw);
+      _fetchHealed = healed.length !== raw.length;
+      return healed;
+    }
   }catch(err){}
   return null;
 }
@@ -903,13 +961,14 @@ function defaultAssignment(dow){
 function defaultHours(dow){
   return dow === "土" ? 2 : 1;
 }
-function makeEntry(month, day, explicitDow, isFather){
+function makeEntry(month, day, explicitDow, forcedAssignment){
   const year = resolveYear(month);
   const dow = explicitDow || computeDow(year, month, day);
+  const forced = forcedAssignment === true ? "father" : forcedAssignment;
   return {
     id: `${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
     year, month, day, dow,
-    assignment: isFather ? "father" : defaultAssignment(dow),
+    assignment: forced || defaultAssignment(dow),
     hours: defaultHours(dow),
     confirmed: false,
     label: `${month}/${day}`
@@ -917,17 +976,19 @@ function makeEntry(month, day, explicitDow, isFather){
 }
 function assignmentContactLabel(id){
   if(id === "father") return "父";
+  if(id === "daiki") return "大樹休み";
   if(id === "babysitter") return "ベビーシッター";
   return `ファミサポ(${assignmentNames[id]})`;
 }
 function assignmentShortLabel(id){
   if(id === "father") return "父";
+  if(id === "daiki") return "大樹休み";
   if(id === "babysitter") return "ベビーシッター";
   const short = (assignmentNames[id] || "").replace(/さん$/,"");
   return `ファミサポ(${short})`;
 }
 function entryRate(entry){
-  if(entry.assignment === "father") return 0;
+  if(isFree(entry.assignment)) return 0;
   if(entry.assignment === "babysitter") return services.babysitter.rate || 0;
   const perHour = entry.dow === "土" ? services.famisapo.saturdayRatePerHour : services.famisapo.ratePerHour;
   return (perHour || 0) * (entry.hours || 0);
@@ -939,30 +1000,31 @@ function parsePasteText(text){
   const reMultiDay = /^(\d{1,2})\s*\/\s*(\d{1,2}(?:\s*[,，、]\s*\d{1,2})+)\s*$/;
   const reDateOnly = /^(\d{1,2})\s*\/\s*(\d{1,2})\s*$/;
   const found = [];
-  let fatherMode = false;
+  let forced = false;
   lines.forEach(line=>{
     const t = line.trim();
-    if(!t){ fatherMode = false; return; }
-    if(t === "父"){ fatherMode = true; return; }
+    if(!t){ forced = false; return; }
+    if(t === "父"){ forced = "father"; return; }
+    if(/^大樹休み?$/.test(t)){ forced = "daiki"; return; }
     let m = t.match(reWithDow);
     if(m){
-      found.push(makeEntry(Number(m[1]), Number(m[2]), m[3], fatherMode));
+      found.push(makeEntry(Number(m[1]), Number(m[2]), m[3], forced));
       return;
     }
     m = t.match(reMultiDay);
     if(m){
       const month = Number(m[1]);
       m[2].split(/[,，、]/).map(s=>Number(s.trim())).filter(d=>!isNaN(d)).forEach(day=>{
-        found.push(makeEntry(month, day, null, fatherMode));
+        found.push(makeEntry(month, day, null, forced));
       });
       return;
     }
     m = t.match(reDateOnly);
     if(m){
-      found.push(makeEntry(Number(m[1]), Number(m[2]), null, fatherMode));
+      found.push(makeEntry(Number(m[1]), Number(m[2]), null, forced));
       return;
     }
-    fatherMode = false;
+    forced = false;
   });
   return found;
 }
@@ -985,16 +1047,18 @@ function renderEntries(){
     const kind = dayKindClasses(entry.year, entry.month, entry.day);
     const classes = [];
     if(entry.assignment === "father") classes.push("father");
+    if(entry.assignment === "daiki") classes.push("daiki");
+    if(entry.confirmed) classes.push("confirmed");
     if(entry.dow === "土") classes.push("sat");
     if(entry.dow === "日") classes.push("sun");
     if(kind.hol) classes.push("hol");
-    const isOverridden = entry.assignment !== "father" && entry.assignment !== defaultAssignment(entry.dow);
+    const isOverridden = !isFree(entry.assignment) && entry.assignment !== defaultAssignment(entry.dow);
     if(isOverridden) classes.push("service-overridden");
     tr.className = classes.join(" ");
     const holTag = kind.hol ? `<span class="hol-tag" title="${kind.hol}">祝</span>` : "";
 
     const rate = entryRate(entry);
-    const isFamisapo = entry.assignment !== "father" && entry.assignment !== "babysitter";
+    const isFamisapo = !isFree(entry.assignment) && entry.assignment !== "babysitter";
 
     const assignmentSelectHtml = `
       <select class="assignment-select" data-id="${entry.id}">
@@ -1149,6 +1213,8 @@ function renderCalendarNav(){
 function updateSelectionCount(){
   const el = document.getElementById("selCount");
   if(el) el.textContent = selectedDates.size;
+  const clr = document.getElementById("clrCount");
+  if(clr) clr.textContent = selectedDates.size ? `(${selectedDates.size})` : "";
 }
 
 function renderCalendar(){
@@ -1159,9 +1225,10 @@ function renderCalendar(){
 
   const groupList = getDisplayGroups();
   const shownEntries = entries.filter(en=> en.year === calendarView.year && en.month === calendarView.month);
-  const hasFamisapo = shownEntries.some(en=>en.assignment !== "father" && en.assignment !== "babysitter");
+  const hasFamisapo = shownEntries.some(en=>!isFree(en.assignment) && en.assignment !== "babysitter");
   const hasBabysitter = shownEntries.some(en=>en.assignment === "babysitter");
   const hasFatherEntries = shownEntries.some(en=>en.assignment === "father");
+  const hasDaikiEntries = shownEntries.some(en=>en.assignment === "daiki");
 
   {
     const legend = document.createElement("div");
@@ -1170,6 +1237,7 @@ function renderCalendar(){
     if(hasFamisapo) legendHtml += `<span class="legend-item"><span class="legend-dot svc-accent"></span>ファミサポ</span>`;
     if(hasBabysitter) legendHtml += `<span class="legend-item"><span class="legend-dot svc-svc2"></span>ベビーシッター</span>`;
     if(hasFatherEntries) legendHtml += `<span class="legend-item"><span class="legend-dot legend-father"></span>父</span>`;
+    if(hasDaikiEntries) legendHtml += `<span class="legend-item"><span class="legend-dot legend-daiki"></span>大樹休み</span>`;
     legendHtml += `<span class="legend-item">実線=確定 / 点線=予定</span>`;
     legendHtml += `<span class="legend-item"><span style="color:var(--sat);font-weight:700;">土</span>=青</span>`;
     legendHtml += `<span class="legend-item"><span style="color:var(--sun);font-weight:700;">日・祝</span>=赤</span>`;
@@ -1207,8 +1275,9 @@ function renderCalendar(){
 
     for(let day=1; day<=daysInMonth; day++){
       const dayEntries = g.byDay.get(day) || [];
-      const payableToday = dayEntries.filter(en=>en.assignment !== "father");
+      const payableToday = dayEntries.filter(en=>!isFree(en.assignment));
       const hasFather = dayEntries.some(en=>en.assignment === "father");
+      const hasDaiki = dayEntries.some(en=>en.assignment === "daiki");
       const cell = document.createElement("div");
       let svcClass = "";
       if(payableToday.length){
@@ -1219,12 +1288,13 @@ function renderCalendar(){
       const kind = dayKindClasses(g.year, g.month, day);
       const kindClass = (kind.classes.includes("sat") ? " day-sat" : "") + (kind.classes.includes("off") ? " day-off" : "");
       const selClass = selectedDates.has(dKey) ? " msg-selected" : "";
-      cell.className = "cal-cell" + (payableToday.length ? ` has-entry${svcClass}` : "") + (hasFather ? " has-father" : "") + (dayEntries.length && !allConfirmed ? " tentative" : "") + kindClass + selClass;
+      cell.className = "cal-cell" + (payableToday.length ? ` has-entry${svcClass}` : "") + (hasFather ? " has-father" : "") + (hasDaiki ? " has-daiki" : "") + (dayEntries.length && !allConfirmed ? " tentative" : "") + kindClass + selClass;
       const holBadge = kind.hol ? `<span class="cal-hbadge" title="${kind.hol}">祝</span>` : "";
       if(dayEntries.length){
         const total = payableToday.reduce((sum,en)=> sum + entryRate(en), 0);
         const labelParts = [...new Set(payableToday.map(en=> assignmentShortLabel(en.assignment)))];
         if(hasFather) labelParts.push("父");
+        if(hasDaiki) labelParts.push("大樹休み");
         const labelText = labelParts.join("/");
         cell.innerHTML = `
           ${!allConfirmed ? `<div class="cal-tentative-tag">予定</div>` : ""}
@@ -1255,7 +1325,7 @@ function renderSummary(){
   const container = document.getElementById("summaryGrid");
   container.innerHTML = "";
 
-  const payable = entries.filter(en=>en.assignment !== "father");
+  const payable = entries.filter(en=>!isFree(en.assignment));
   const famisapoEntries = payable.filter(en=>en.assignment !== "babysitter");
   const babysitterEntries = payable.filter(en=>en.assignment === "babysitter");
 
@@ -1471,23 +1541,25 @@ document.getElementById("refreshFromSheetBtn").addEventListener("click", async (
   }
   const remote = await fetchEntriesFromSheet();
   if(remote){
+    const healed = _fetchHealed;
     entries = remote;
     localStorage.setItem(STORAGE_ENTRIES, JSON.stringify(entries));
     renderEntries();
-    showAlert(`最新の状態を取得しました(${entries.length}件)。`);
+    if(healed) syncEntriesToSheet();
+    showAlert(`最新の状態を取得しました(${entries.length}件)。${healed ? "同じ日付の重複行を1つにまとめました。" : ""}`);
   } else {
     showAlert("読み込みに失敗しました。通信環境をご確認ください。");
   }
 });
 
-function makeEntryOn(year, month, day){
+function makeEntryOn(year, month, day, forcedAssignment){
   const dow = computeDow(year, month, day);
   return {
     id: `${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
     year, month, day, dow,
-    assignment: defaultAssignment(dow),
+    assignment: forcedAssignment || defaultAssignment(dow),
     hours: defaultHours(dow),
-    confirmed: false,
+    confirmed: forcedAssignment === "daiki",
     label: `${month}/${day}`
   };
 }
@@ -1508,37 +1580,44 @@ function buildMessageFromSelection(){
     showAlert("カレンダーの日付をクリックして選択してから作成してください。");
     return;
   }
-  const message = buildRequestMessage(entriesForSelectedDates());
+  const requestable = entriesForSelectedDates().filter(e=>e.assignment !== "daiki");
+  if(requestable.length === 0){
+    showAlert("選択した日付はすべて大樹休みのため、依頼メッセージにする日付がありません。");
+    return;
+  }
+  const message = buildRequestMessage(requestable);
   const container = document.getElementById("customMessageResult");
   container.innerHTML = "";
   container.appendChild(buildMessageBlock(null, message));
   container.scrollIntoView({behavior:"smooth", block:"center"});
 }
 
-function registerSelectedDates(){
+function registerSelectedDates(forcedAssignment){
   if(selectedDates.size === 0){
     showAlert("カレンダーの日付をクリックして選択してから登録してください。");
     return;
   }
+  const isDaiki = forcedAssignment === "daiki";
   let added = 0, skipped = 0;
   [...selectedDates].forEach(k=>{
     if(entries.some(en=>dateKey(en) === k)){ skipped++; return; }
     const [y,m,d] = k.split("-").map(Number);
-    entries.push(makeEntryOn(y,m,d));
+    entries.push(makeEntryOn(y,m,d,forcedAssignment));
     added++;
   });
   if(added === 0){
-    showAlert("選択した日付はすべて登録済みです。");
+    showAlert(`選択した日付はすべて登録済みです。${isDaiki ? "登録済みの日を大樹休みにするには、③結果の「サービス」で「大樹休み」を選んでください。" : ""}`);
     return;
   }
   saveAll();
   renderEntries();
-  showAlert(`${added}件を予定として登録しました${skipped ? `(${skipped}件は登録済み)` : ""}。`);
+  showAlert(`${added}件を${isDaiki ? "大樹休み" : "予定"}として登録しました${skipped ? `(${skipped}件は登録済みのため対象外)` : ""}。`);
 }
 
 document.getElementById("buildCustomMessageBtn").addEventListener("click", buildMessageFromSelection);
 document.getElementById("calMessageBtn").addEventListener("click", buildMessageFromSelection);
-document.getElementById("calRegisterBtn").addEventListener("click", registerSelectedDates);
+document.getElementById("calRegisterBtn").addEventListener("click", ()=> registerSelectedDates());
+document.getElementById("calDaikiBtn").addEventListener("click", ()=> registerSelectedDates("daiki"));
 document.getElementById("calClearSelBtn").addEventListener("click", ()=>{
   selectedDates.clear();
   renderEntries();
@@ -1575,6 +1654,7 @@ function buildExportCanvas(){
     line:"#e7e1da", accent:"#c97b5a", accentSoft:"#f3e2da",
     sun:"#c25b5b", sat:"#4a7fbf",
     father:"#5f8a5a", fatherSoft:"#e4ecdf",
+    daiki:"#2f8f9d", daikiSoft:"#dcf0f2",
     svc2:"#7c6bb5", svc2Soft:"#e2ddf0"
   };
   function svcHexFor(assignment){
@@ -1582,9 +1662,10 @@ function buildExportCanvas(){
   }
 
   const groupList = getCalendarGroups();
-  const hasFamisapo = entries.some(en=>en.assignment !== "father" && en.assignment !== "babysitter");
+  const hasFamisapo = entries.some(en=>!isFree(en.assignment) && en.assignment !== "babysitter");
   const hasBabysitter = entries.some(en=>en.assignment === "babysitter");
   const hasFatherEntries = entries.some(en=>en.assignment === "father");
+  const hasDaikiEntries = entries.some(en=>en.assignment === "daiki");
   const legendH = groupList.length ? 26 : 0;
   const cellW = contentWidth / 7;
   const cellH = 62;
@@ -1602,7 +1683,7 @@ function buildExportCanvas(){
   const calSectionTitleH = 34;
   const calTotalH = calMetrics.length ? calSectionTitleH + legendH + calMetrics.reduce((s,m)=>s+m.h,0) : 0;
 
-  const payableEntries = entries.filter(e => e.assignment !== "father");
+  const payableEntries = entries.filter(e => !isFree(e.assignment));
   const famisapoEntries = payableEntries.filter(e=>e.assignment !== "babysitter");
   const babysitterEntries = payableEntries.filter(e=>e.assignment === "babysitter");
   const famisapoBreakdownIds = ["tanaka","tashiro","kobayashi"].filter(id=> famisapoEntries.some(e=>e.assignment===id));
@@ -1668,6 +1749,7 @@ function buildExportCanvas(){
       if(hasFamisapo) drawDot(colors.accent, "ファミサポ");
       if(hasBabysitter) drawDot(colors.svc2, "ベビーシッター");
       if(hasFatherEntries) drawDot(colors.father, "父");
+      if(hasDaikiEntries) drawDot(colors.daiki, "大樹休み");
       ctx.fillStyle = colors.sub;
       ctx.font = "400 11px sans-serif";
       ctx.fillText("実線=確定 / 点線=予定", lx, ly+4);
@@ -1705,8 +1787,9 @@ function buildExportCanvas(){
       let row = 0;
       for(let day=1; day<=g.daysInMonth; day++){
         const dayEntries = g.byDay.get(day) || [];
-        const payableToday = dayEntries.filter(en=>en.assignment !== "father");
+        const payableToday = dayEntries.filter(en=>!isFree(en.assignment));
         const hasFather = dayEntries.some(en=>en.assignment === "father");
+        const hasDaiki = dayEntries.some(en=>en.assignment === "daiki");
         const cx = margin + col*cellW;
         const cy = y + row*cellH;
         const w = cellW - 4;
@@ -1716,9 +1799,8 @@ function buildExportCanvas(){
         const kind = dayKindClasses(g.year, g.month, day);
         const isSat = kind.classes.includes("sat");
         const isOff = kind.classes.includes("off");
-        const plainBg = isOff ? "#fbeaea" : (isSat ? "#e9f0fa" : colors.card);
-        const bgFill = payableToday.length ? svcHex.soft : (hasFather ? colors.fatherSoft : plainBg);
-        const borderColor = payableToday.length ? svcHex.c : (hasFather ? colors.father : colors.line);
+        const bgFill = payableToday.length ? svcHex.soft : (hasFather ? colors.fatherSoft : (hasDaiki ? colors.daikiSoft : colors.card));
+        const borderColor = payableToday.length ? svcHex.c : (hasFather ? colors.father : (hasDaiki ? colors.daiki : colors.line));
         const allConfirmed = dayEntries.length > 0 && dayEntries.every(en=>en.confirmed);
         ctx.fillStyle = bgFill;
         roundRect(ctx, cx+2, cy+2, w, h, 6);
@@ -1765,9 +1847,10 @@ function buildExportCanvas(){
           }
           const labelParts = [...new Set(payableToday.map(en=> assignmentShortLabel(en.assignment)))];
           if(hasFather) labelParts.push("父");
+          if(hasDaiki) labelParts.push("大樹休み");
           const labelText = labelParts.join("/");
           if(labelText){
-            ctx.fillStyle = hasFather && !payableToday.length ? colors.father : colors.sub;
+            ctx.fillStyle = !payableToday.length ? (hasDaiki ? colors.daiki : colors.father) : colors.sub;
             ctx.font = "400 9px sans-serif";
             ctx.fillText(labelText, cx+8, payableToday.length ? cy+49 : cy+35);
           }
@@ -2010,9 +2093,11 @@ async function initEntries(){
   renderEntries();
   const remote = await fetchEntriesFromSheet();
   if(remote){
+    const healed = _fetchHealed;
     entries = remote;
     localStorage.setItem(STORAGE_ENTRIES, JSON.stringify(entries));
     renderEntries();
+    if(healed) syncEntriesToSheet();
   }
 }
 
