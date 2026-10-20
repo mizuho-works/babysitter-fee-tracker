@@ -354,7 +354,20 @@
   }
   .cal-actionbar .sel-count{font-size:0.85rem;color:var(--sub);flex:1;min-width:90px;}
   .cal-actionbar .sel-count b{color:var(--ink);font-size:1rem;}
-  .cal-more{display:flex;justify-content:center;margin-top:12px;}
+  .cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .cal-nav select{
+    flex:1;
+    min-width:150px;
+    padding:8px 10px;
+    border-radius:9px;
+    border:1px solid var(--line);
+    background:var(--bg);
+    color:var(--ink);
+    font-size:0.95rem;
+    font-weight:600;
+    font-family:inherit;
+  }
+  .cal-nav button{padding:8px 14px;}
   .cal-cell.has-entry.svc-accent{background:var(--accent-soft);border-color:var(--accent);}
   .cal-cell.has-entry.svc-svc2{background:var(--svc2-soft);border-color:var(--svc2);}
   .cal-cell.has-father:not(.has-entry){
@@ -538,12 +551,15 @@
   <div class="card">
     <h2><span class="step-badge">4</span>カレンダー表示</h2>
     <div class="hint-box">
-      日付のマスをクリックして選択し(✓が付きます)、下のボタンで「メッセージ作成」か「予定として登録」を選べます。まだ予定がない日も選べます。土曜は青、日曜・祝日は赤で表示されます。
+      基本は来月のカレンダーを表示します。◀ ▶ や月のプルダウンで別の月にも切り替えられます(他の月で選んだ日付も残ります)。日付のマスをクリックして選択し(✓が付きます)、下のボタンで「メッセージ作成」か「予定として登録」を選べます。まだ予定がない日も選べます。土曜は青、日曜・祝日は赤で表示されます。
+    </div>
+    <div class="cal-nav">
+      <button class="btn-ghost" id="calPrevBtn" aria-label="前の月">◀</button>
+      <select id="calMonthSelect" aria-label="表示する月"></select>
+      <button class="btn-ghost" id="calNextBtn" aria-label="次の月">▶</button>
+      <button class="btn-ghost" id="calNextMonthBtn">来月に戻る</button>
     </div>
     <div id="calendarContainer"></div>
-    <div class="cal-more">
-      <button class="btn-ghost" id="calendarMoreBtn">さらに先の月を表示</button>
-    </div>
     <div class="cal-actionbar">
       <span class="sel-count">選択中: <b id="selCount">0</b>日</span>
       <button class="btn-primary" id="calMessageBtn">メッセージを作成</button>
@@ -704,7 +720,7 @@ let services = loadServices();
 let assignmentNames = loadAssignmentNames();
 let entries = loadArray(STORAGE_ENTRIES).map(migrateEntry);
 const selectedDates = new Set();
-let calendarExtraMonths = 0;
+let calendarView = defaultCalendarView();
 
 const _holidayCache = {};
 function getJapaneseHolidays(year){
@@ -1075,25 +1091,59 @@ function serviceColorKeyForAssignment(assignment){
   return assignment === "babysitter" ? "svc2" : "accent";
 }
 
-function getDisplayGroups(){
-  const groups = new Map();
-  const ensure = (year, month)=>{
-    const key = `${year}-${month}`;
-    if(!groups.has(key)) groups.set(key, {year, month, byDay: new Map()});
-    return groups.get(key);
-  };
+function defaultCalendarView(){
   const now = new Date();
-  for(let i=0; i<=2+calendarExtraMonths; i++){
-    const d = new Date(now.getFullYear(), now.getMonth()+i, 1);
-    ensure(d.getFullYear(), d.getMonth()+1);
-  }
+  const d = new Date(now.getFullYear(), now.getMonth()+1, 1);
+  return { year: d.getFullYear(), month: d.getMonth()+1 };
+}
+
+function shiftCalendarView(delta){
+  const d = new Date(calendarView.year, calendarView.month-1+delta, 1);
+  calendarView = { year: d.getFullYear(), month: d.getMonth()+1 };
+  renderCalendar();
+}
+
+function getDisplayGroups(){
+  const group = { year: calendarView.year, month: calendarView.month, byDay: new Map() };
   entries.forEach(entry=>{
-    const g = ensure(entry.year, entry.month);
-    const list = g.byDay.get(entry.day) || [];
+    if(entry.year !== group.year || entry.month !== group.month) return;
+    const list = group.byDay.get(entry.day) || [];
     list.push(entry);
-    g.byDay.set(entry.day, list);
+    group.byDay.set(entry.day, list);
   });
-  return [...groups.values()].sort((a,b)=> a.year !== b.year ? a.year - b.year : a.month - b.month);
+  return [group];
+}
+
+function renderCalendarNav(){
+  const select = document.getElementById("calMonthSelect");
+  const now = new Date();
+  const monthKeys = new Set();
+  for(let i=0; i<=8; i++){
+    const d = new Date(now.getFullYear(), now.getMonth()+i, 1);
+    monthKeys.add(`${d.getFullYear()}-${d.getMonth()+1}`);
+  }
+  entries.forEach(en=> monthKeys.add(`${en.year}-${en.month}`));
+  [...selectedDates].forEach(k=>{ const [y,m] = k.split("-"); monthKeys.add(`${y}-${Number(m)}`); });
+  monthKeys.add(`${calendarView.year}-${calendarView.month}`);
+
+  const sortedKeys = [...monthKeys].sort((a,b)=>{
+    const [ay,am] = a.split("-").map(Number), [by,bm] = b.split("-").map(Number);
+    return ay !== by ? ay - by : am - bm;
+  });
+
+  select.innerHTML = sortedKeys.map(k=>{
+    const [y,m] = k.split("-").map(Number);
+    const entryCount = entries.filter(en=>en.year===y && en.month===m).length;
+    const selCount = [...selectedDates].filter(dk=>{ const [sy,sm] = dk.split("-").map(Number); return sy===y && sm===m; }).length;
+    const notes = [];
+    if(entryCount) notes.push(`予定${entryCount}件`);
+    if(selCount) notes.push(`選択${selCount}日`);
+    return `<option value="${k}" ${k===`${calendarView.year}-${calendarView.month}` ? "selected" : ""}>${y}年${m}月${notes.length ? `(${notes.join("・")})` : ""}</option>`;
+  }).join("");
+
+  const def = defaultCalendarView();
+  document.getElementById("calNextMonthBtn").style.display =
+    (calendarView.year === def.year && calendarView.month === def.month) ? "none" : "";
 }
 
 function updateSelectionCount(){
@@ -1105,11 +1155,13 @@ function renderCalendar(){
   const container = document.getElementById("calendarContainer");
   container.innerHTML = "";
   updateSelectionCount();
+  renderCalendarNav();
 
   const groupList = getDisplayGroups();
-  const hasFamisapo = entries.some(en=>en.assignment !== "father" && en.assignment !== "babysitter");
-  const hasBabysitter = entries.some(en=>en.assignment === "babysitter");
-  const hasFatherEntries = entries.some(en=>en.assignment === "father");
+  const shownEntries = entries.filter(en=> en.year === calendarView.year && en.month === calendarView.month);
+  const hasFamisapo = shownEntries.some(en=>en.assignment !== "father" && en.assignment !== "babysitter");
+  const hasBabysitter = shownEntries.some(en=>en.assignment === "babysitter");
+  const hasFatherEntries = shownEntries.some(en=>en.assignment === "father");
 
   {
     const legend = document.createElement("div");
@@ -1491,8 +1543,15 @@ document.getElementById("calClearSelBtn").addEventListener("click", ()=>{
   selectedDates.clear();
   renderEntries();
 });
-document.getElementById("calendarMoreBtn").addEventListener("click", ()=>{
-  calendarExtraMonths++;
+document.getElementById("calPrevBtn").addEventListener("click", ()=> shiftCalendarView(-1));
+document.getElementById("calNextBtn").addEventListener("click", ()=> shiftCalendarView(1));
+document.getElementById("calNextMonthBtn").addEventListener("click", ()=>{
+  calendarView = defaultCalendarView();
+  renderCalendar();
+});
+document.getElementById("calMonthSelect").addEventListener("change", e=>{
+  const [y,m] = e.target.value.split("-").map(Number);
+  calendarView = { year: y, month: m };
   renderCalendar();
 });
 
