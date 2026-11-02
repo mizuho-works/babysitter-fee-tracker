@@ -120,8 +120,77 @@ function handlePost_(e){
       return jsonOut_({ ok:true });
     }
 
+    if(action === "syncCalendar"){
+      return jsonOut_(Object.assign({ ok:true }, syncCalendar_(body)));
+    }
+
     return jsonOut_({ ok:false, error: "unknown action: " + action });
   }catch(err){
     return jsonOut_({ ok:false, error: String(err) });
   }
+}
+
+/**
+ * Pushes confirmed entries into a dedicated Google Calendar (which TimeTree can then import).
+ * Idempotent: every event carries a tag with the entry id, so sending the same entry again
+ * updates (or leaves alone) the existing event instead of creating a second one, and events
+ * whose entry is no longer confirmed / no longer exists are removed. Only events created by
+ * this script (those with the tag) inside the given range are ever modified or deleted.
+ */
+const CAL_NAME = "ファミサポ予定(タイムツリー連携用)";
+const CAL_TAG = "famisup";
+
+function getBridgeCalendar_(){
+  const found = CalendarApp.getCalendarsByName(CAL_NAME);
+  if(found.length) return found[0];
+  return CalendarApp.createCalendar(CAL_NAME, { timeZone: Session.getScriptTimeZone() });
+}
+
+function sameDay_(a, b){
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function syncCalendar_(body){
+  const items = body.entries || [];
+  const rs = body.rangeStart, re = body.rangeEnd;
+  const cal = getBridgeCalendar_();
+  const start = new Date(rs.year, rs.month - 1, rs.day);
+  const end = new Date(re.year, re.month - 1, re.day + 1);
+
+  const existing = {};
+  cal.getEvents(start, end).forEach(ev=>{
+    const id = ev.getTag(CAL_TAG);
+    if(!id) return;
+    (existing[id] = existing[id] || []).push(ev);
+  });
+
+  const wanted = {};
+  let created = 0, updated = 0, unchanged = 0, removed = 0;
+
+  items.forEach(it=>{
+    if(wanted[it.id]) return;
+    wanted[it.id] = true;
+    const date = new Date(it.year, it.month - 1, it.day);
+    const evs = existing[it.id] || [];
+    if(evs.length === 0){
+      const ev = cal.createAllDayEvent(it.title, date, { description: it.description || "" });
+      ev.setTag(CAL_TAG, it.id);
+      created++;
+      return;
+    }
+    const ev = evs[0];
+    evs.slice(1).forEach(extra=>{ extra.deleteEvent(); removed++; });
+    let changed = false;
+    if(!ev.isAllDayEvent() || !sameDay_(ev.getAllDayStartDate(), date)){ ev.setAllDayDate(date); changed = true; }
+    if(ev.getTitle() !== it.title){ ev.setTitle(it.title); changed = true; }
+    if((ev.getDescription() || "") !== (it.description || "")){ ev.setDescription(it.description || ""); changed = true; }
+    if(changed) updated++; else unchanged++;
+  });
+
+  Object.keys(existing).forEach(id=>{
+    if(wanted[id]) return;
+    existing[id].forEach(ev=>{ ev.deleteEvent(); removed++; });
+  });
+
+  return { created: created, updated: updated, unchanged: unchanged, removed: removed, calendar: cal.getName() };
 }

@@ -355,8 +355,13 @@
     border-radius:12px;
     box-shadow:0 4px 14px rgba(0,0,0,0.12);
   }
-  .cal-actionbar .sel-count{font-size:0.85rem;color:var(--sub);flex:1;min-width:90px;}
+  .cal-actionbar button{padding:8px 11px;font-size:0.85rem;}
+  .cal-actionbar .sel-count{font-size:0.85rem;color:var(--sub);flex:1;min-width:70px;white-space:nowrap;}
   .cal-actionbar .sel-count b{color:var(--ink);font-size:1rem;}
+  .cal-setup{margin-top:14px;font-size:0.82rem;color:var(--sub);}
+  .cal-setup summary{cursor:pointer;font-weight:600;color:var(--ink);}
+  .cal-setup ol{padding-left:1.3em;margin:8px 0;}
+  .cal-setup li{margin-bottom:4px;}
   .cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
   .cal-nav select{
     flex:1;
@@ -421,7 +426,7 @@
     .assignment-select{max-width:100px;font-size:0.72rem;}
     .cal-actionbar{padding:8px 10px;gap:6px;bottom:6px;}
     .cal-actionbar .sel-count{display:none;}
-    .cal-actionbar button{flex:1 1 calc(50% - 6px);min-width:0;padding:9px 6px;font-size:0.82rem;white-space:nowrap;}
+    .cal-actionbar button{flex:1 1 calc(33.333% - 6px);min-width:0;padding:9px 4px;font-size:0.76rem;white-space:nowrap;}
     .cal-actionbar .clr-count{display:inline;}
   }
   .preview-modal{
@@ -560,7 +565,7 @@
   <div class="card">
     <h2><span class="step-badge">4</span>カレンダー表示</h2>
     <div class="hint-box">
-      基本は来月のカレンダーを表示します。◀ ▶ や月のプルダウンで別の月にも切り替えられます(他の月で選んだ日付も残ります)。日付のマスをクリックして選択し(✓が付きます)、下のボタンで「メッセージ作成」「予定として登録」「大樹休みとして登録」を選べます。まだ予定がない日も選べます。土曜は青、日曜・祝日は赤で表示されます。
+      基本は来月のカレンダーを表示します。◀ ▶ や月のプルダウンで別の月にも切り替えられます(他の月で選んだ日付も残ります)。日付のマスをクリックして選択し(✓が付きます)、下のボタンで「メッセージ作成」「予定登録」「大樹休み登録」「確定」「削除」ができます。まだ予定がない日も選べます。土曜は青、日曜・祝日は赤で表示されます。
     </div>
     <div class="cal-nav">
       <button class="btn-ghost" id="calPrevBtn" aria-label="前の月">◀</button>
@@ -571,10 +576,12 @@
     <div id="calendarContainer"></div>
     <div class="cal-actionbar">
       <span class="sel-count">選択中: <b id="selCount">0</b>日</span>
-      <button class="btn-primary" id="calMessageBtn">メッセージを作成</button>
-      <button class="btn-primary" id="calRegisterBtn">予定として登録</button>
-      <button class="btn-primary btn-daiki" id="calDaikiBtn">大樹休みとして登録</button>
-      <button class="btn-ghost" id="calClearSelBtn">選択をクリア<span class="clr-count" id="clrCount"></span></button>
+      <button class="btn-primary" id="calMessageBtn" title="選択した日付で依頼メッセージを作る">メッセージ作成</button>
+      <button class="btn-primary" id="calRegisterBtn" title="選択した日付を予定として登録する">予定登録</button>
+      <button class="btn-primary" id="calDaikiBtn" title="選択した日付を大樹休みとして登録する">大樹休み登録</button>
+      <button class="btn-primary" id="calConfirmBtn" title="選択した日付の予定を確定にする">確定</button>
+      <button class="btn-danger-ghost" id="calDeleteBtn" title="選択した日付の予定を削除する">削除</button>
+      <button class="btn-ghost" id="calClearSelBtn" title="選択を解除する">クリア<span class="clr-count" id="clrCount"></span></button>
     </div>
     <div class="btn-row">
       <button class="btn-ghost" id="calendarResetBtn">カレンダーをリセット</button>
@@ -610,6 +617,27 @@
       <button class="btn-primary" id="buildCustomMessageBtn">選択した日付でメッセージを作成</button>
     </div>
     <div id="customMessageResult" class="contact-messages"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step-badge">8</span>確定した予定をタイムツリーへ</h2>
+    <div class="hint-box">
+      タイムツリーは外部のアプリから予定を直接登録できない仕様のため、確定した予定をGoogleカレンダー「ファミサポ予定(タイムツリー連携用)」に送り、タイムツリー側でそのカレンダーを取り込む方法になります。
+      同じ予定を何度送っても二重にはなりません。確定を外した予定や削除した予定は、次に送ったときにカレンダーからも消えます(このアプリが作った予定だけが対象で、他の予定には触れません)。
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" id="sendCalendarBtn">確定した予定をカレンダーに送る</button>
+    </div>
+    <div id="sendCalendarResult" class="empty-hint" style="text-align:left;padding:10px 2px 0;"></div>
+    <details class="cal-setup">
+      <summary>初回だけ必要な設定</summary>
+      <ol>
+        <li>Apps Scriptを最新版に更新して再デプロイし、カレンダーへのアクセスを許可します(最初の送信時に専用カレンダーが自動で作られます)。</li>
+        <li>スマホのカレンダーに、そのGoogleアカウントのカレンダーが表示されるようにします(iPhoneは「設定 → カレンダー → アカウント」、Androidは標準でGoogleカレンダーと同期されます)。</li>
+        <li>タイムツリーの設定で、スマホのカレンダー(外部カレンダー)の取り込みをオンにし、「ファミサポ予定(タイムツリー連携用)」を選びます。メニュー名はアプリのバージョンで異なることがあります。</li>
+      </ol>
+      タイムツリー側への反映は、タイムツリーが取り込みを行うタイミングになるため、送信してすぐには表示されないことがあります。
+    </details>
   </div>
 </div>
 
@@ -1615,7 +1643,117 @@ function registerSelectedDates(forcedAssignment){
 }
 
 document.getElementById("buildCustomMessageBtn").addEventListener("click", buildMessageFromSelection);
+function entriesOnSelectedDates(){
+  return entries.filter(en=> selectedDates.has(dateKey(en)));
+}
+
+function confirmSelectedDates(){
+  if(selectedDates.size === 0){
+    showAlert("カレンダーの日付をクリックして選択してから確定してください。");
+    return;
+  }
+  const targets = entriesOnSelectedDates();
+  if(targets.length === 0){
+    showAlert("選択した日付に登録済みの予定がありません。先に「予定登録」してください。");
+    return;
+  }
+  const toConfirm = targets.filter(en=>!en.confirmed);
+  if(toConfirm.length === 0){
+    showAlert("選択した予定はすべて確定済みです。");
+    return;
+  }
+  toConfirm.forEach(en=>{ en.confirmed = true; });
+  saveAll();
+  renderEntries();
+  showAlert(`${toConfirm.length}件を確定にしました。`);
+}
+
+function deleteSelectedDates(){
+  if(selectedDates.size === 0){
+    showAlert("カレンダーの日付をクリックして選択してから削除してください。");
+    return;
+  }
+  const targets = entriesOnSelectedDates();
+  if(targets.length === 0){
+    showAlert("選択した日付に登録済みの予定がありません。");
+    return;
+  }
+  const labels = targets.map(en=>`${en.label}(${en.dow})`);
+  const shown = labels.length > 6 ? `${labels.slice(0,6).join("、")} ほか${labels.length-6}件` : labels.join("、");
+  showConfirm(`選択した日付の予定 ${targets.length}件を削除します。\n${shown}\n\nよろしいですか?`, ()=>{
+    const ids = new Set(targets.map(en=>en.id));
+    const keys = new Set(targets.map(en=>dateKey(en)));
+    entries = entries.filter(en=>!ids.has(en.id));
+    keys.forEach(k=>selectedDates.delete(k));
+    saveAll();
+    renderEntries();
+  });
+}
+
+function calendarPayloadFor(entry){
+  const title = assignmentContactLabel(entry.assignment);
+  const isFamisapo = !isFree(entry.assignment) && entry.assignment !== "babysitter";
+  const lines = [];
+  if(isFamisapo) lines.push(`${entry.hours}時間`);
+  lines.push("※ファミサポ料金シミュレーターから登録(確定)");
+  return { id: entry.id, year: entry.year, month: entry.month, day: entry.day, title, description: lines.join("\n") };
+}
+
+let _calendarSending = false;
+async function sendConfirmedToCalendar(){
+  if(_calendarSending) return;
+  if(!SHEET_API_URL){
+    showAlert("スプレッドシート連携が未設定のため送信できません。");
+    return;
+  }
+  const confirmed = entries.filter(en=>en.confirmed);
+  const now = new Date();
+  const dates = entries.map(en=>new Date(en.year, en.month-1, en.day));
+  const earliest = dates.length ? new Date(Math.min(now.getTime(), ...dates.map(d=>d.getTime()))) : now;
+  const latestBase = new Date(now.getFullYear(), now.getMonth()+12, 0);
+  const latest = dates.length ? new Date(Math.max(latestBase.getTime(), ...dates.map(d=>d.getTime()))) : latestBase;
+  const rangeStart = { year: earliest.getFullYear(), month: earliest.getMonth()+1, day: 1 };
+  const lastDay = new Date(latest.getFullYear(), latest.getMonth()+1, 0);
+  const rangeEnd = { year: lastDay.getFullYear(), month: lastDay.getMonth()+1, day: lastDay.getDate() };
+
+  const btn = document.getElementById("sendCalendarBtn");
+  const resultEl = document.getElementById("sendCalendarResult");
+  _calendarSending = true;
+  btn.disabled = true;
+  resultEl.textContent = "送信中…";
+  try{
+    // make sure the sheet has the latest state first (writes are serialized)
+    await syncEntriesToSheet();
+    const res = await fetch(SHEET_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "syncCalendar", entries: confirmed.map(calendarPayloadFor), rangeStart, rangeEnd })
+    });
+    const data = await res.json();
+    if(data.ok){
+      const parts = [`新規${data.created}件`, `更新${data.updated}件`, `変更なし${data.unchanged}件`];
+      if(data.removed) parts.push(`削除${data.removed}件`);
+      resultEl.textContent = `送信しました(${parts.join("・")})。確定済み ${confirmed.length}件がカレンダー「${data.calendar}」に入っています。`;
+    } else if(/unknown action/.test(data.error || "")){
+      resultEl.textContent = "";
+      showAlert("Apps Scriptがまだ古いバージョンです。最新のCode.gsに貼り替えて再デプロイしてから、もう一度お試しください。");
+    } else {
+      resultEl.textContent = "";
+      showAlert(`送信に失敗しました: ${data.error || "不明なエラー"}`);
+    }
+  }catch(err){
+    resultEl.textContent = "";
+    showAlert("送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。");
+  }finally{
+    _calendarSending = false;
+    btn.disabled = false;
+  }
+}
+document.getElementById("sendCalendarBtn").addEventListener("click", sendConfirmedToCalendar);
+
 document.getElementById("calMessageBtn").addEventListener("click", buildMessageFromSelection);
+document.getElementById("calConfirmBtn").addEventListener("click", confirmSelectedDates);
+document.getElementById("calDeleteBtn").addEventListener("click", deleteSelectedDates);
 document.getElementById("calRegisterBtn").addEventListener("click", ()=> registerSelectedDates());
 document.getElementById("calDaikiBtn").addEventListener("click", ()=> registerSelectedDates("daiki"));
 document.getElementById("calClearSelBtn").addEventListener("click", ()=>{
