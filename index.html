@@ -84,26 +84,7 @@
     font-weight:600;
     flex:none;
   }
-  .service-config{display:flex;flex-direction:column;gap:14px;}
-  .service-config-item{
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:14px;
-    background:var(--bg);
-  }
-  .service-config-title{font-weight:700;margin-bottom:8px;}
-  .rate-row{display:flex;align-items:center;gap:6px;}
-  .rate-row input[type=number]{
-    width:100px;
-    padding:6px 8px;
-    border-radius:8px;
-    border:1px solid var(--line);
-    background:var(--card);
-    color:var(--ink);
-    font-size:0.95rem;
-  }
-  .rate-row span{color:var(--sub);font-size:0.85rem;}
-  .assignment-names{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+  .assignment-names{display:flex;flex-direction:column;gap:8px;}
   .assignment-names label{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:0.82rem;color:var(--sub);}
   .assignment-names input{
     flex:1;
@@ -454,32 +435,17 @@
 <body>
 <div class="wrap">
   <h1>ワンオペ日 ファミサポ料金シミュレーション</h1>
-  <p class="lead">ファミサポの単価を設定し、対象日を貼り付ければ自動集計します。</p>
+  <p class="lead">対象日を入力すると、ファミサポの料金を自動で集計します。</p>
 
   <div class="card">
-    <h2><span class="step-badge">1</span>ファミサポの単価設定</h2>
-    <div class="service-config">
-      <div class="service-config-item">
-        <div class="service-config-title">ファミサポ</div>
-        <div class="rate-row">
-          <span>¥</span>
-          <input type="number" min="0" step="10" id="famisapoRateInput">
-          <span>/ 時間(平日)</span>
-        </div>
-        <div class="rate-row" style="margin-top:6px;">
-          <span>¥</span>
-          <input type="number" min="0" step="10" id="famisapoSaturdayRateInput">
-          <span>/ 時間(土曜)</span>
-        </div>
-        <div class="assignment-names">
-          <label>月曜日の担当 <input type="text" id="nameTashiro"></label>
-          <label>火曜日の担当 <input type="text" id="nameKobayashi"></label>
-          <label>それ以外の担当 <input type="text" id="nameTanaka"></label>
-        </div>
-      </div>
+    <h2><span class="step-badge">1</span>担当者の設定</h2>
+    <div class="assignment-names">
+      <label>月曜日の担当 <input type="text" id="nameTashiro"></label>
+      <label>火曜日の担当 <input type="text" id="nameKobayashi"></label>
+      <label>それ以外の担当 <input type="text" id="nameTanaka"></label>
     </div>
     <div class="hint-box" style="margin-top:14px;margin-bottom:0;">
-      ファミサポは時間制です。田中さんは平日1.5時間、ほかの担当者は平日1時間、土曜日は2時間が初期値です。③結果で日ごとに時間を調整できます。土曜日の単価は別に設定できます。
+      ファミサポの時間単価は平日700円、土日800円です。田中さんは平日1.5時間、ほかの担当者は平日1時間、土曜日は2時間が初期値です。③結果で日ごとに時間を調整できます。
     </div>
   </div>
 
@@ -528,7 +494,7 @@
             <th>曜日</th>
             <th>サービス</th>
             <th>時間</th>
-            <th class="num">単価</th>
+            <th class="num">料金</th>
             <th>確定</th>
             <th>選択</th>
             <th></th>
@@ -651,42 +617,17 @@ const ASSIGNMENT_ORDER = ["tanaka","tashiro","kobayashi","father","daiki"];
 const FREE_ASSIGNMENTS = ["father","daiki"];
 function isFree(assignment){ return FREE_ASSIGNMENTS.includes(assignment); }
 
-const DEFAULT_SERVICES = { famisapo: { ratePerHour: 700, saturdayRatePerHour: 800 } };
+const FAMISAPO_WEEKDAY_RATE = 700;
+const FAMISAPO_WEEKEND_RATE = 800;
 const DEFAULT_ASSIGNMENT_NAMES = { tanaka: "田中さん", tashiro: "田代さん", kobayashi: "小林さん" };
 
-const OLD_STORAGE_RATES = "babysitter_sim_rates_v1";
 const OLD_STORAGE_CONTACTS = "babysitter_sim_contacts_v1";
-const STORAGE_SERVICES = "babysitter_sim_services_v2";
 const STORAGE_ASSIGNMENT_NAMES = "babysitter_sim_assignment_names_v2";
 const STORAGE_ENTRIES = "babysitter_sim_entries_v1";
 
 // Google Apps Script Web App URL that backs the "依頼状況" spreadsheet sync.
 // Set once deployed; entries sync automatically to the sheet whenever this is non-empty.
 const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbw043ZfVcbUwCQmDSZVX19I18cNujNgC_6xC5OyM8aUrrEABnqN22mP5yZt1OxanmFw/exec";
-
-function loadServices(){
-  const raw = localStorage.getItem(STORAGE_SERVICES);
-  if(raw){
-    try{
-      const parsed = JSON.parse(raw);
-      return {
-        famisapo: {
-          ratePerHour: parsed?.famisapo?.ratePerHour ?? DEFAULT_SERVICES.famisapo.ratePerHour,
-          saturdayRatePerHour: parsed?.famisapo?.saturdayRatePerHour ?? DEFAULT_SERVICES.famisapo.saturdayRatePerHour
-        }
-      };
-    }catch(e){}
-  }
-  let famisapoRate = DEFAULT_SERVICES.famisapo.ratePerHour;
-  try{
-    const oldRaw = localStorage.getItem(OLD_STORAGE_RATES);
-    if(oldRaw){
-      const oldRates = JSON.parse(oldRaw);
-      if(typeof oldRates["月"] === "number") famisapoRate = oldRates["月"];
-    }
-  }catch(e){}
-  return { famisapo: { ratePerHour: famisapoRate, saturdayRatePerHour: DEFAULT_SERVICES.famisapo.saturdayRatePerHour } };
-}
 
 function loadAssignmentNames(){
   const raw = localStorage.getItem(STORAGE_ASSIGNMENT_NAMES);
@@ -738,7 +679,6 @@ function migrateEntry(e){
   };
 }
 
-let services = loadServices();
 let assignmentNames = loadAssignmentNames();
 const savedEntries = loadArray(STORAGE_ENTRIES).map(migrateEntry);
 // Keep retired assignments in storage and sheet replacements without showing or billing them.
@@ -816,7 +756,6 @@ function saveEntriesLocally(){
 }
 
 function saveAll(){
-  localStorage.setItem(STORAGE_SERVICES, JSON.stringify(services));
   localStorage.setItem(STORAGE_ASSIGNMENT_NAMES, JSON.stringify(assignmentNames));
   saveEntriesLocally();
   syncEntriesToSheet();
@@ -915,23 +854,11 @@ async function fetchEntriesFromSheet(){
   return null;
 }
 
-function initServiceConfig(){
-  document.getElementById("famisapoRateInput").value = services.famisapo.ratePerHour;
-  document.getElementById("famisapoSaturdayRateInput").value = services.famisapo.saturdayRatePerHour;
+function initAssignmentNames(){
   document.getElementById("nameTashiro").value = assignmentNames.tashiro;
   document.getElementById("nameKobayashi").value = assignmentNames.kobayashi;
   document.getElementById("nameTanaka").value = assignmentNames.tanaka;
 
-  document.getElementById("famisapoRateInput").addEventListener("input", e=>{
-    services.famisapo.ratePerHour = Number(e.target.value) || 0;
-    saveAll();
-    renderEntries();
-  });
-  document.getElementById("famisapoSaturdayRateInput").addEventListener("input", e=>{
-    services.famisapo.saturdayRatePerHour = Number(e.target.value) || 0;
-    saveAll();
-    renderEntries();
-  });
   document.getElementById("nameTashiro").addEventListener("input", e=>{
     assignmentNames.tashiro = e.target.value;
     saveAll();
@@ -999,8 +926,9 @@ function assignmentShortLabel(id){
 }
 function entryRate(entry){
   if(isFree(entry.assignment)) return 0;
-  const perHour = entry.dow === "土" ? services.famisapo.saturdayRatePerHour : services.famisapo.ratePerHour;
-  return (perHour || 0) * (entry.hours || 0);
+  const isWeekend = entry.dow === "土" || entry.dow === "日";
+  const perHour = isWeekend ? FAMISAPO_WEEKEND_RATE : FAMISAPO_WEEKDAY_RATE;
+  return perHour * (entry.hours || 0);
 }
 
 function parsePasteText(text){
@@ -2161,7 +2089,7 @@ async function initEntries(){
   }
 }
 
-initServiceConfig();
+initAssignmentNames();
 initEntries();
 </script>
 </body>
