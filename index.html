@@ -579,7 +579,7 @@
   <div class="card">
     <h2><span class="step-badge">8</span>TimeTreeの「家族」に取り込む</h2>
     <div class="hint-box">
-      まず確定した予定をGoogleカレンダー「ファミサポ予定(タイムツリー連携用)」に送ります。次にTimeTreeアプリで「家族」を開き、右上のメニューから「外部カレンダーの予定をインポート」を選んで、ファミサポのカレンダーを取り込んでください。
+      確定した「父」と「ファミサポ」の予定だけをGoogleカレンダー「ファミサポ予定(タイムツリー連携用)」に送ります。次にTimeTreeアプリで「家族」を開き、右上のメニューから「外部カレンダーの予定をインポート」を選んで、ファミサポのカレンダーを取り込んでください。
     </div>
     <details class="cal-setup" id="calendarKeySetup">
       <summary>この端末の連携キー</summary>
@@ -591,7 +591,7 @@
       </div>
     </details>
     <div class="btn-row">
-      <button class="btn-primary" id="sendCalendarBtn">確定した予定をGoogleカレンダーに送る</button>
+      <button class="btn-primary" id="sendCalendarBtn">「父」と「ファミサポ」の確定予定を送る</button>
     </div>
     <div id="sendCalendarResult" class="empty-hint" style="text-align:left;padding:10px 2px 0;" role="status"></div>
     <details class="cal-setup">
@@ -1651,7 +1651,9 @@ async function sendConfirmedToCalendar(){
     showAlert("カレンダーに送るには連携キーを入力してください。");
     return;
   }
-  const confirmed = entries.filter(en=>en.confirmed);
+  const confirmed = entries.filter(entry=>entry.confirmed && (
+    entry.assignment === "father" || Object.hasOwn(DEFAULT_ASSIGNMENT_NAMES, entry.assignment)
+  ));
   const now = new Date();
   const dates = entries.map(en=>new Date(en.year, en.month-1, en.day));
   const earliest = dates.length ? new Date(Math.min(now.getTime(), ...dates.map(d=>d.getTime()))) : now;
