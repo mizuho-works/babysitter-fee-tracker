@@ -577,23 +577,22 @@
   </div>
 
   <div class="card">
-    <h2><span class="step-badge">8</span>確定した予定をタイムツリーへ</h2>
+    <h2><span class="step-badge">8</span>TimeTreeの「家族」に取り込む</h2>
     <div class="hint-box">
-      タイムツリーは外部のアプリから予定を直接登録できない仕様のため、確定した予定をGoogleカレンダー「ファミサポ予定(タイムツリー連携用)」に送り、タイムツリー側でそのカレンダーを取り込む方法になります。
-      同じ予定を何度送っても二重にはなりません。確定を外した予定や削除した予定は、次に送ったときにカレンダーからも消えます(このアプリが作った予定だけが対象で、他の予定には触れません)。
+      まず確定した予定をGoogleカレンダー「ファミサポ予定(タイムツリー連携用)」に送ります。次にTimeTreeアプリで「家族」を開き、右上のメニューから「外部カレンダーの予定をインポート」を選んで、ファミサポのカレンダーを取り込んでください。
     </div>
     <div class="btn-row">
-      <button class="btn-primary" id="sendCalendarBtn">確定した予定をカレンダーに送る</button>
+      <button class="btn-primary" id="sendCalendarBtn">確定した予定をGoogleカレンダーに送る</button>
     </div>
-    <div id="sendCalendarResult" class="empty-hint" style="text-align:left;padding:10px 2px 0;"></div>
+    <div id="sendCalendarResult" class="empty-hint" style="text-align:left;padding:10px 2px 0;" role="status"></div>
     <details class="cal-setup">
-      <summary>初回だけ必要な設定</summary>
+      <summary>初回の設定と予定を変更したとき</summary>
       <ol>
-        <li>Apps Scriptを最新版に更新して再デプロイし、カレンダーへのアクセスを許可します(最初の送信時に専用カレンダーが自動で作られます)。</li>
-        <li>スマホのカレンダーに、そのGoogleアカウントのカレンダーが表示されるようにします(iPhoneは「設定 → カレンダー → アカウント」、Androidは標準でGoogleカレンダーと同期されます)。</li>
-        <li>タイムツリーの設定で、スマホのカレンダー(外部カレンダー)の取り込みをオンにし、「ファミサポ予定(タイムツリー連携用)」を選びます。メニュー名はアプリのバージョンで異なることがあります。</li>
+        <li>Apps Scriptでカレンダー連携の設定を済ませます。最初の送信時にGoogleカレンダーに「ファミサポ予定(タイムツリー連携用)」が作られます。</li>
+        <li>スマホの標準カレンダーでファミサポの予定が見えることを確認し、TimeTreeにカレンダーへのアクセスを許可します。</li>
       </ol>
-      タイムツリー側への反映は、タイムツリーが取り込みを行うタイミングになるため、送信してすぐには表示されないことがあります。
+      <p>予定の変更・削除はGoogleカレンダーへの送信で反映されます。「家族」に取り込み済みの予定を変更・削除した場合は、「家族」側でも該当の予定を整理してください。変更後の予定を取り込むと、元の予定と重複することがあります。</p>
+      <a href="https://support.timetreeapp.com/hc/ja/articles/360000639742" target="_blank" rel="noopener noreferrer">TimeTree公式のインポート手順</a>
     </details>
   </div>
 </div>
@@ -1617,7 +1616,7 @@ async function sendConfirmedToCalendar(){
     if(data.ok){
       const parts = [`新規${data.created}件`, `更新${data.updated}件`, `変更なし${data.unchanged}件`];
       if(data.removed) parts.push(`削除${data.removed}件`);
-      resultEl.textContent = `送信しました(${parts.join("・")})。確定済み ${confirmed.length}件がカレンダー「${data.calendar}」に入っています。`;
+      resultEl.textContent = `送信しました(${parts.join("・")})。確定済み ${confirmed.length}件をGoogleカレンダー「${data.calendar}」に反映しました。TimeTreeの「家族」でインポートしてください。`;
     } else if(/unknown action/.test(data.error || "")){
       resultEl.textContent = "";
       showAlert("Apps Scriptがまだ古いバージョンです。最新のCode.gsに貼り替えて再デプロイしてから、もう一度お試しください。");
