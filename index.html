@@ -72,6 +72,12 @@
     align-items:center;
     gap:8px;
   }
+  .settings-card summary{cursor:pointer;list-style:none;}
+  .settings-card summary::-webkit-details-marker{display:none;}
+  .settings-card summary h2{margin:0;}
+  .settings-card summary h2::after{content:"▸";margin-left:auto;color:var(--sub);}
+  .settings-card[open] summary h2::after{content:"▾";}
+  .settings-card .assignment-names{margin-top:14px;}
   .step-badge{
     display:inline-flex;
     align-items:center;
@@ -437,17 +443,17 @@
   <h1>ワンオペ日 ファミサポ料金シミュレーション</h1>
   <p class="lead">対象日を入力すると、ファミサポの料金を自動で集計します。</p>
 
-  <div class="card">
-    <h2><span class="step-badge">1</span>担当者の設定</h2>
+  <details class="card settings-card">
+    <summary><h2><span class="step-badge">1</span>単価・担当者</h2></summary>
     <div class="assignment-names">
       <label>月曜日の担当 <input type="text" id="nameTashiro"></label>
       <label>火曜日の担当 <input type="text" id="nameKobayashi"></label>
       <label>それ以外の担当 <input type="text" id="nameTanaka"></label>
     </div>
     <div class="hint-box" style="margin-top:14px;margin-bottom:0;">
-      ファミサポの時間単価は平日700円、土日800円です。田中さんは平日1.5時間、ほかの担当者は平日1時間、土曜日は2時間が初期値です。③結果で日ごとに時間を調整できます。
+      ファミサポの時間単価は平日700円、土日800円です。田中さんは平日1.5時間、ほかの担当者は平日1時間、土曜日は2時間が初期値です。④結果一覧で日ごとに時間を調整できます。
     </div>
-  </div>
+  </details>
 
   <div class="card">
     <h2><span class="step-badge">2</span>対象日の入力</h2>
@@ -485,7 +491,33 @@
   </div>
 
   <div class="card">
-    <h2><span class="step-badge">3</span>結果 <span id="resultsMonth"></span></h2>
+    <h2><span class="step-badge">3</span>カレンダー表示</h2>
+    <div class="hint-box">
+      基本は来月のカレンダーを表示します。④結果一覧と⑤合計も同じ月に切り替わります。◀ ▶ や月のプルダウンで別の月にも切り替えられます(他の月で選んだ日付も残ります)。日付のマスをクリックして選択し(✓が付きます)、下のボタンで「メッセージ作成」「予定登録」「大樹休み登録」「確定」「削除」ができます。まだ予定がない日も選べます。土曜は青、日曜・祝日は赤で表示されます。
+    </div>
+    <div class="cal-nav">
+      <button class="btn-ghost" id="calPrevBtn" aria-label="前の月">◀</button>
+      <select id="calMonthSelect" aria-label="表示する月"></select>
+      <button class="btn-ghost" id="calNextBtn" aria-label="次の月">▶</button>
+      <button class="btn-ghost" id="calNextMonthBtn">来月に戻る</button>
+    </div>
+    <div id="calendarContainer"></div>
+    <div class="cal-actionbar">
+      <span class="sel-count">選択中: <b id="selCount">0</b>日</span>
+      <button class="btn-primary" id="calMessageBtn" title="選択した日付で依頼メッセージを作る">メッセージ作成</button>
+      <button class="btn-primary" id="calRegisterBtn" title="選択した日付を予定として登録する">予定登録</button>
+      <button class="btn-primary" id="calDaikiBtn" title="選択した日付を大樹休みとして登録する">大樹休み登録</button>
+      <button class="btn-primary" id="calConfirmBtn" title="選択した日付の予定を確定にする">確定</button>
+      <button class="btn-danger-ghost" id="calDeleteBtn" title="選択した日付の予定を削除する">削除</button>
+      <button class="btn-ghost" id="calClearSelBtn" title="選択を解除する">クリア<span class="clr-count" id="clrCount"></span></button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-ghost" id="calendarResetBtn">カレンダーをリセット</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step-badge">4</span>結果一覧 <span id="resultsMonth"></span></h2>
     <div class="table-scroll">
       <table>
         <thead>
@@ -514,33 +546,7 @@
   </div>
 
   <div class="card">
-    <h2><span class="step-badge">4</span>カレンダー表示</h2>
-    <div class="hint-box">
-      基本は来月のカレンダーを表示します。③結果も同じ月に切り替わります。◀ ▶ や月のプルダウンで別の月にも切り替えられます(他の月で選んだ日付も残ります)。日付のマスをクリックして選択し(✓が付きます)、下のボタンで「メッセージ作成」「予定登録」「大樹休み登録」「確定」「削除」ができます。まだ予定がない日も選べます。土曜は青、日曜・祝日は赤で表示されます。
-    </div>
-    <div class="cal-nav">
-      <button class="btn-ghost" id="calPrevBtn" aria-label="前の月">◀</button>
-      <select id="calMonthSelect" aria-label="表示する月"></select>
-      <button class="btn-ghost" id="calNextBtn" aria-label="次の月">▶</button>
-      <button class="btn-ghost" id="calNextMonthBtn">来月に戻る</button>
-    </div>
-    <div id="calendarContainer"></div>
-    <div class="cal-actionbar">
-      <span class="sel-count">選択中: <b id="selCount">0</b>日</span>
-      <button class="btn-primary" id="calMessageBtn" title="選択した日付で依頼メッセージを作る">メッセージ作成</button>
-      <button class="btn-primary" id="calRegisterBtn" title="選択した日付を予定として登録する">予定登録</button>
-      <button class="btn-primary" id="calDaikiBtn" title="選択した日付を大樹休みとして登録する">大樹休み登録</button>
-      <button class="btn-primary" id="calConfirmBtn" title="選択した日付の予定を確定にする">確定</button>
-      <button class="btn-danger-ghost" id="calDeleteBtn" title="選択した日付の予定を削除する">削除</button>
-      <button class="btn-ghost" id="calClearSelBtn" title="選択を解除する">クリア<span class="clr-count" id="clrCount"></span></button>
-    </div>
-    <div class="btn-row">
-      <button class="btn-ghost" id="calendarResetBtn">カレンダーをリセット</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2><span class="step-badge">5</span>サービス別・合計</h2>
+    <h2><span class="step-badge">5</span>サービス別・合計 <span id="summaryMonth"></span></h2>
     <div class="summary-grid" id="summaryGrid"></div>
     <div class="grand-total">
       <span class="gt-label">合計金額</span>
@@ -551,7 +557,7 @@
   <div class="card">
     <h2><span class="step-badge">6</span>画像・PDFで保存</h2>
     <div class="hint-box">
-      ④カレンダー表示 と ⑤サービス別・合計 だけをまとめて1枚の画像にして表示します。表示された画像を長押し(パソコンは右クリック)して保存し、LINEなどで共有してください。PDF保存はブラウザによっては動作しないことがあります。
+      表示中の月のカレンダーと合計を1枚にまとめます。表示された画像を長押し(パソコンは右クリック)して保存し、LINEなどで共有してください。PDF保存はブラウザによっては動作しないことがあります。
     </div>
     <div class="btn-row">
       <button class="btn-primary" id="exportPngBtn">画像を表示(保存用)</button>
@@ -562,7 +568,7 @@
   <div class="card">
     <h2><span class="step-badge">7</span>依頼メッセージを作成</h2>
     <div class="hint-box">
-      ④カレンダーの日付をクリックして選択(または③結果の「選択」にチェック)し、そのまま依頼メッセージを作成できます。まだ予定に登録していない日でも作成できます。
+      ③カレンダーの日付をクリックして選択(または④結果一覧の「選択」にチェック)し、そのまま依頼メッセージを作成できます。まだ予定に登録していない日でも作成できます。
     </div>
     <div class="btn-row">
       <button class="btn-primary" id="buildCustomMessageBtn">選択した日付でメッセージを作成</button>
@@ -1078,19 +1084,6 @@ function renderEntries(){
   renderSummary();
 }
 
-function getCalendarGroups(){
-  const groups = new Map();
-  entries.forEach(entry=>{
-    const key = `${entry.year}-${entry.month}`;
-    if(!groups.has(key)) groups.set(key, {year: entry.year, month: entry.month, byDay: new Map()});
-    const g = groups.get(key);
-    const list = g.byDay.get(entry.day) || [];
-    list.push(entry);
-    g.byDay.set(entry.day, list);
-  });
-  return [...groups.values()].sort((a,b)=> a.year !== b.year ? a.year - b.year : a.month - b.month);
-}
-
 function defaultCalendarView(){
   const now = new Date();
   const d = new Date(now.getFullYear(), now.getMonth()+1, 1);
@@ -1258,7 +1251,8 @@ function renderSummary(){
   const container = document.getElementById("summaryGrid");
   container.innerHTML = "";
 
-  const famisapoEntries = entries.filter(en=>!isFree(en.assignment));
+  document.getElementById("summaryMonth").textContent = `${calendarView.year}年${calendarView.month}月`;
+  const famisapoEntries = entriesInCalendarMonth().filter(en=>!isFree(en.assignment));
 
   const famisapoTotal = famisapoEntries.reduce((s,en)=>s+entryRate(en),0);
 
@@ -1524,7 +1518,7 @@ function registerSelectedDates(forcedAssignment){
     added++;
   });
   if(added === 0){
-    showAlert(`選択した日付はすべて登録済みです。${isDaiki ? "登録済みの日を大樹休みにするには、③結果の「サービス」で「大樹休み」を選んでください。" : ""}`);
+    showAlert(`選択した日付はすべて登録済みです。${isDaiki ? "登録済みの日を大樹休みにするには、④結果一覧の「サービス」で「大樹休み」を選んでください。" : ""}`);
     return;
   }
   saveAll();
@@ -1684,10 +1678,11 @@ function buildExportCanvas(){
     father:"#5f8a5a", fatherSoft:"#e4ecdf",
     daiki:"#2f8f9d", daikiSoft:"#dcf0f2"
   };
-  const groupList = getCalendarGroups();
-  const hasFamisapo = entries.some(en=>!isFree(en.assignment));
-  const hasFatherEntries = entries.some(en=>en.assignment === "father");
-  const hasDaikiEntries = entries.some(en=>en.assignment === "daiki");
+  const shownEntries = entriesInCalendarMonth();
+  const groupList = getDisplayGroups(shownEntries);
+  const hasFamisapo = shownEntries.some(en=>!isFree(en.assignment));
+  const hasFatherEntries = shownEntries.some(en=>en.assignment === "father");
+  const hasDaikiEntries = shownEntries.some(en=>en.assignment === "daiki");
   const legendH = groupList.length ? 26 : 0;
   const cellW = contentWidth / 7;
   const cellH = 62;
@@ -1705,7 +1700,7 @@ function buildExportCanvas(){
   const calSectionTitleH = 34;
   const calTotalH = calMetrics.length ? calSectionTitleH + legendH + calMetrics.reduce((s,m)=>s+m.h,0) : 0;
 
-  const famisapoEntries = entries.filter(e=>!isFree(e.assignment));
+  const famisapoEntries = shownEntries.filter(e=>!isFree(e.assignment));
   const famisapoBreakdownIds = ["tanaka","tashiro","kobayashi"].filter(id=> famisapoEntries.some(e=>e.assignment===id));
 
   const sumSectionTitleH = 34;
@@ -1952,10 +1947,8 @@ function buildExportCanvas(){
 }
 
 function exportFilenameBase(){
-  const groupList = getCalendarGroups();
-  if(groupList.length === 0) return "famisapo_sim";
-  const months = groupList.map(g=>`${g.year}-${String(g.month).padStart(2,"0")}`).join("_");
-  return `famisapo_sim_${months}`;
+  const {year, month} = calendarView;
+  return `famisapo_sim_${year}-${String(month).padStart(2,"0")}`;
 }
 
 function triggerDownload(href, filename){
@@ -2038,19 +2031,11 @@ document.getElementById("imagePreviewModal").addEventListener("click", e=>{
 });
 
 document.getElementById("exportPngBtn").addEventListener("click", ()=>{
-  if(entries.length === 0){
-    showAlert("対象日がありません。先に②で日付を取り込んでください。");
-    return;
-  }
   const canvas = buildExportCanvas();
   showImagePreview(canvas.toDataURL("image/png"));
 });
 
 document.getElementById("exportPdfBtn").addEventListener("click", ()=>{
-  if(entries.length === 0){
-    showAlert("対象日がありません。先に②で日付を取り込んでください。");
-    return;
-  }
   const canvas = buildExportCanvas();
   const blob = canvasToPdfBlob(canvas);
   const url = URL.createObjectURL(blob);
