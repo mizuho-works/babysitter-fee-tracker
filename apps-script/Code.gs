@@ -86,6 +86,16 @@ function handlePost_(e){
   try{
     const body = JSON.parse(e.postData.contents);
     const action = body.action;
+    if(action === "syncCalendar" || action === "calendarStatus"){
+      const keyError = calendarKeyError_(body.key);
+      if(keyError) return jsonOut_({ ok:false, error: keyError });
+      if(action === "calendarStatus"){
+        checkCalendarAccess();
+        return jsonOut_({ ok:true });
+      }
+      return jsonOut_(Object.assign({ ok:true }, syncCalendar_(body)));
+    }
+
     const sheet = getSheet_();
 
     if(action === "upsert"){
@@ -120,10 +130,6 @@ function handlePost_(e){
       return jsonOut_({ ok:true });
     }
 
-    if(action === "syncCalendar"){
-      return jsonOut_(Object.assign({ ok:true }, syncCalendar_(body)));
-    }
-
     return jsonOut_({ ok:false, error: "unknown action: " + action });
   }catch(err){
     return jsonOut_({ ok:false, error: String(err) });
@@ -139,6 +145,25 @@ function handlePost_(e){
  */
 const CAL_NAME = "ファミサポ予定(タイムツリー連携用)";
 const CAL_TAG = "famisup";
+const CAL_KEY_PROPERTY = "CALENDAR_SYNC_KEY";
+
+function calendarKeyError_(key){
+  const expected = PropertiesService.getScriptProperties().getProperty(CAL_KEY_PROPERTY);
+  if(!expected) return "calendar_key_not_configured";
+  if(typeof key !== "string" || !key || key.length > 128) return "calendar_key_invalid";
+  const digest = value=>Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, value, Utilities.Charset.UTF_8);
+  const actualHash = digest(key);
+  const expectedHash = digest(expected);
+  let difference = 0;
+  for(let i = 0; i < expectedHash.length; i++){
+    difference |= actualHash[i] ^ expectedHash[i];
+  }
+  return difference ? "calendar_key_invalid" : "";
+}
+
+function checkCalendarAccess(){
+  CalendarApp.getDefaultCalendar().getId();
+}
 
 function getBridgeCalendar_(){
   const found = CalendarApp.getCalendarsByName(CAL_NAME);

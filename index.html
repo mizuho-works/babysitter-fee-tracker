@@ -581,6 +581,15 @@
     <div class="hint-box">
       まず確定した予定をGoogleカレンダー「ファミサポ予定(タイムツリー連携用)」に送ります。次にTimeTreeアプリで「家族」を開き、右上のメニューから「外部カレンダーの予定をインポート」を選んで、ファミサポのカレンダーを取り込んでください。
     </div>
+    <details class="cal-setup" id="calendarKeySetup">
+      <summary>この端末の連携キー</summary>
+      <div class="assignment-names">
+        <label>連携キー <input type="password" id="calendarSyncKey" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="128"></label>
+      </div>
+      <div class="btn-row">
+        <button class="btn-ghost" id="checkCalendarKeyBtn">接続を確認してキーを保存</button>
+      </div>
+    </details>
     <div class="btn-row">
       <button class="btn-primary" id="sendCalendarBtn">確定した予定をGoogleカレンダーに送る</button>
     </div>
@@ -588,7 +597,7 @@
     <details class="cal-setup">
       <summary>初回の設定と予定を変更したとき</summary>
       <ol>
-        <li>Apps Scriptでカレンダー連携の設定を済ませます。最初の送信時にGoogleカレンダーに「ファミサポ予定(タイムツリー連携用)」が作られます。</li>
+        <li>上の「この端末の連携キー」でキーを入力し、「接続を確認してキーを保存」を押します。最初の予定送信時に、Googleカレンダーに「ファミサポ予定(タイムツリー連携用)」が作られます。</li>
         <li>スマホの標準カレンダーでファミサポの予定が見えることを確認し、TimeTreeにカレンダーへのアクセスを許可します。</li>
       </ol>
       <p>予定の変更・削除はGoogleカレンダーへの送信で反映されます。「家族」に取り込み済みの予定を変更・削除した場合は、「家族」側でも該当の予定を整理してください。変更後の予定を取り込むと、元の予定と重複することがあります。</p>
@@ -1582,11 +1591,64 @@ function calendarPayloadFor(entry){
   return { id: entry.id, year: entry.year, month: entry.month, day: entry.day, title, description: lines.join("\n") };
 }
 
+const STORAGE_CALENDAR_KEY = "famisapo_calendar_sync_key_v1";
+
+function calendarErrorMessage(error){
+  if(error === "calendar_key_invalid") return "連携キーが違います。「この端末の連携キー」で入力し直してください。";
+  if(error === "calendar_key_not_configured") return "Apps Scriptに連携キーが設定されていません。";
+  if(/unknown action/.test(error || "")) return "Apps Scriptが古いバージョンです。既存のデプロイを最新版に更新してください。";
+  return `カレンダー連携に失敗しました（${error || "不明なエラー"}）。`;
+}
+
+async function callCalendarApi(body){
+  const res = await fetch(SHEET_API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+const calendarKeyInput = document.getElementById("calendarSyncKey");
+const checkCalendarKeyBtn = document.getElementById("checkCalendarKeyBtn");
+calendarKeyInput.value = localStorage.getItem(STORAGE_CALENDAR_KEY) || "";
+checkCalendarKeyBtn.addEventListener("click", async ()=>{
+  const key = calendarKeyInput.value.trim();
+  if(!key){
+    showAlert("連携キーを入力してください。");
+    return;
+  }
+  const resultEl = document.getElementById("sendCalendarResult");
+  checkCalendarKeyBtn.disabled = true;
+  resultEl.textContent = "接続を確認中…";
+  try{
+    const data = await callCalendarApi({ action: "calendarStatus", key });
+    if(!data.ok){
+      resultEl.textContent = calendarErrorMessage(data.error);
+      return;
+    }
+    localStorage.setItem(STORAGE_CALENDAR_KEY, key);
+    document.getElementById("calendarKeySetup").open = false;
+    resultEl.textContent = "Googleカレンダーとの接続を確認し、この端末に連携キーを保存しました。";
+  }catch(err){
+    resultEl.textContent = "接続を確認できませんでした。通信環境をご確認ください。";
+  }finally{
+    checkCalendarKeyBtn.disabled = false;
+  }
+});
+
 let _calendarSending = false;
 async function sendConfirmedToCalendar(){
   if(_calendarSending) return;
   if(!SHEET_API_URL){
     showAlert("スプレッドシート連携が未設定のため送信できません。");
+    return;
+  }
+  const key = calendarKeyInput.value.trim();
+  if(!key){
+    document.getElementById("calendarKeySetup").open = true;
+    calendarKeyInput.focus();
+    showAlert("カレンダーに送るには連携キーを入力してください。");
     return;
   }
   const confirmed = entries.filter(en=>en.confirmed);
@@ -1605,24 +1667,17 @@ async function sendConfirmedToCalendar(){
   btn.disabled = true;
   resultEl.textContent = "送信中…";
   try{
-    // make sure the sheet has the latest state first (writes are serialized)
-    await syncEntriesToSheet();
-    const res = await fetch(SHEET_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "syncCalendar", entries: confirmed.map(calendarPayloadFor), rangeStart, rangeEnd })
+    const data = await callCalendarApi({
+      action: "syncCalendar", key, entries: confirmed.map(calendarPayloadFor), rangeStart, rangeEnd
     });
-    const data = await res.json();
     if(data.ok){
+      localStorage.setItem(STORAGE_CALENDAR_KEY, key);
       const parts = [`新規${data.created}件`, `更新${data.updated}件`, `変更なし${data.unchanged}件`];
       if(data.removed) parts.push(`削除${data.removed}件`);
       resultEl.textContent = `送信しました(${parts.join("・")})。確定済み ${confirmed.length}件をGoogleカレンダー「${data.calendar}」に反映しました。TimeTreeの「家族」でインポートしてください。`;
-    } else if(/unknown action/.test(data.error || "")){
-      resultEl.textContent = "";
-      showAlert("Apps Scriptがまだ古いバージョンです。最新のCode.gsに貼り替えて再デプロイしてから、もう一度お試しください。");
     } else {
-      resultEl.textContent = "";
-      showAlert(`送信に失敗しました: ${data.error || "不明なエラー"}`);
+      if(data.error === "calendar_key_invalid") document.getElementById("calendarKeySetup").open = true;
+      resultEl.textContent = calendarErrorMessage(data.error);
     }
   }catch(err){
     resultEl.textContent = "";
