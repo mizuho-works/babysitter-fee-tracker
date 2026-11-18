@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ベビーシッター/ファミサポ料金シミュレーション</title>
+<title>ファミサポ料金シミュレーション</title>
 <style>
   :root{
     --bg:#f7f5f2;
@@ -19,8 +19,6 @@
     --father-soft:#e4ecdf;
     --daiki:#2f8f9d;
     --daiki-soft:#dcf0f2;
-    --svc2:#7c6bb5;
-    --svc2-soft:#e2ddf0;
     --sat:#4a7fbf;
     --sun:#c25b5b;
     --confirm-bg:#e6f2e4;
@@ -41,8 +39,6 @@
       --father-soft:#2c3628;
       --daiki:#6cc3cf;
       --daiki-soft:#1f3438;
-      --svc2:#a99bd9;
-      --svc2-soft:#332c4a;
       --sat:#7fa8dc;
       --sun:#e48a8a;
       --confirm-bg:#223225;
@@ -377,7 +373,6 @@
   }
   .cal-nav button{padding:8px 14px;}
   .cal-cell.has-entry.svc-accent{background:var(--accent-soft);border-color:var(--accent);}
-  .cal-cell.has-entry.svc-svc2{background:var(--svc2-soft);border-color:var(--svc2);}
   .cal-cell.has-father:not(.has-entry){
     background:var(--father-soft);
     border-color:var(--father);
@@ -391,7 +386,6 @@
   .cal-cell.has-entry:not(.day-sat):not(.day-off) .cal-daynum,.cal-cell.has-father:not(.day-sat):not(.day-off) .cal-daynum,.cal-cell.has-daiki:not(.day-sat):not(.day-off) .cal-daynum{color:var(--ink);}
   .cal-amount{font-size:0.78rem;font-weight:700;margin-top:4px;}
   .cal-cell.svc-accent .cal-amount{color:var(--accent);}
-  .cal-cell.svc-svc2 .cal-amount{color:var(--svc2);}
   .cal-label{font-size:0.66rem;color:var(--sub);margin-top:1px;word-break:break-word;}
   .cal-cell.has-father:not(.has-entry) .cal-label{color:var(--father);font-weight:600;}
   .cal-cell.has-daiki:not(.has-entry) .cal-label{color:var(--daiki);font-weight:600;}
@@ -400,7 +394,6 @@
   .legend-item{display:flex;align-items:center;gap:5px;}
   .legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none;}
   .legend-dot.svc-accent{background:var(--accent);}
-  .legend-dot.svc-svc2{background:var(--svc2);}
   .legend-dot.legend-father{background:var(--father);}
   .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 
@@ -460,11 +453,11 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>ワンオペ日 ベビーシッター/ファミサポ料金シミュレーション</h1>
-  <p class="lead">サービスごとの単価を設定し、対象日を貼り付ければ自動集計します。</p>
+  <h1>ワンオペ日 ファミサポ料金シミュレーション</h1>
+  <p class="lead">ファミサポの単価を設定し、対象日を貼り付ければ自動集計します。</p>
 
   <div class="card">
-    <h2><span class="step-badge">1</span>サービスごとの単価設定</h2>
+    <h2><span class="step-badge">1</span>ファミサポの単価設定</h2>
     <div class="service-config">
       <div class="service-config-item">
         <div class="service-config-title">ファミサポ</div>
@@ -484,17 +477,9 @@
           <label>それ以外の担当 <input type="text" id="nameTanaka"></label>
         </div>
       </div>
-      <div class="service-config-item">
-        <div class="service-config-title">ベビーシッター</div>
-        <div class="rate-row">
-          <span>¥</span>
-          <input type="number" min="0" step="10" id="babysitterRateInput">
-          <span>/ 回</span>
-        </div>
-      </div>
     </div>
     <div class="hint-box" style="margin-top:14px;margin-bottom:0;">
-      ファミサポは時間制です。土曜日は基本2時間・平日は基本1時間として自動計算します(③結果で日ごとに時間を調整できます)。単価も土曜日だけ別に設定できます。
+      ファミサポは時間制です。田中さんは平日1.5時間、ほかの担当者は平日1時間、土曜日は2時間が初期値です。③結果で日ごとに時間を調整できます。土曜日の単価は別に設定できます。
     </div>
   </div>
 
@@ -534,7 +519,7 @@
   </div>
 
   <div class="card">
-    <h2><span class="step-badge">3</span>結果</h2>
+    <h2><span class="step-badge">3</span>結果 <span id="resultsMonth"></span></h2>
     <div class="table-scroll">
       <table>
         <thead>
@@ -552,7 +537,7 @@
         <tbody id="entryBody"></tbody>
       </table>
     </div>
-    <div id="emptyHint" class="empty-hint" style="display:none;">まだ対象日がありません。上のフォームから追加してください。</div>
+    <div id="emptyHint" class="empty-hint" style="display:none;">この月には対象日がありません。</div>
     <div class="hint-box" style="margin-top:14px;">
       「確定」にチェックを入れた行は塗りつぶしで表示され、カレンダーでも実線・確定として表示されます。チェックがない日は点線で「予定」として表示されます。土曜は青、日曜・祝日は赤で「曜日」の文字色が変わります。「選択」は⑦の依頼メッセージ作成で使います。
     </div>
@@ -565,7 +550,7 @@
   <div class="card">
     <h2><span class="step-badge">4</span>カレンダー表示</h2>
     <div class="hint-box">
-      基本は来月のカレンダーを表示します。◀ ▶ や月のプルダウンで別の月にも切り替えられます(他の月で選んだ日付も残ります)。日付のマスをクリックして選択し(✓が付きます)、下のボタンで「メッセージ作成」「予定登録」「大樹休み登録」「確定」「削除」ができます。まだ予定がない日も選べます。土曜は青、日曜・祝日は赤で表示されます。
+      基本は来月のカレンダーを表示します。③結果も同じ月に切り替わります。◀ ▶ や月のプルダウンで別の月にも切り替えられます(他の月で選んだ日付も残ります)。日付のマスをクリックして選択し(✓が付きます)、下のボタンで「メッセージ作成」「予定登録」「大樹休み登録」「確定」「削除」ができます。まだ予定がない日も選べます。土曜は青、日曜・祝日は赤で表示されます。
     </div>
     <div class="cal-nav">
       <button class="btn-ghost" id="calPrevBtn" aria-label="前の月">◀</button>
@@ -662,11 +647,11 @@
 <script>
 const DOWS = ["日","月","火","水","木","金","土"];
 const DOW_CLASS = {"日":"sun","土":"sat"};
-const ASSIGNMENT_ORDER = ["tanaka","tashiro","kobayashi","father","daiki","babysitter"];
+const ASSIGNMENT_ORDER = ["tanaka","tashiro","kobayashi","father","daiki"];
 const FREE_ASSIGNMENTS = ["father","daiki"];
 function isFree(assignment){ return FREE_ASSIGNMENTS.includes(assignment); }
 
-const DEFAULT_SERVICES = { famisapo: { ratePerHour: 700, saturdayRatePerHour: 800 }, babysitter: { rate: 3400 } };
+const DEFAULT_SERVICES = { famisapo: { ratePerHour: 700, saturdayRatePerHour: 800 } };
 const DEFAULT_ASSIGNMENT_NAMES = { tanaka: "田中さん", tashiro: "田代さん", kobayashi: "小林さん" };
 
 const OLD_STORAGE_RATES = "babysitter_sim_rates_v1";
@@ -688,22 +673,19 @@ function loadServices(){
         famisapo: {
           ratePerHour: parsed?.famisapo?.ratePerHour ?? DEFAULT_SERVICES.famisapo.ratePerHour,
           saturdayRatePerHour: parsed?.famisapo?.saturdayRatePerHour ?? DEFAULT_SERVICES.famisapo.saturdayRatePerHour
-        },
-        babysitter: { rate: parsed?.babysitter?.rate ?? DEFAULT_SERVICES.babysitter.rate }
+        }
       };
     }catch(e){}
   }
   let famisapoRate = DEFAULT_SERVICES.famisapo.ratePerHour;
-  let babysitterRate = DEFAULT_SERVICES.babysitter.rate;
   try{
     const oldRaw = localStorage.getItem(OLD_STORAGE_RATES);
     if(oldRaw){
       const oldRates = JSON.parse(oldRaw);
       if(typeof oldRates["月"] === "number") famisapoRate = oldRates["月"];
-      if(typeof oldRates["水"] === "number") babysitterRate = oldRates["水"];
     }
   }catch(e){}
-  return { famisapo: { ratePerHour: famisapoRate, saturdayRatePerHour: DEFAULT_SERVICES.famisapo.saturdayRatePerHour }, babysitter: { rate: babysitterRate } };
+  return { famisapo: { ratePerHour: famisapoRate, saturdayRatePerHour: DEFAULT_SERVICES.famisapo.saturdayRatePerHour } };
 }
 
 function loadAssignmentNames(){
@@ -750,7 +732,7 @@ function migrateEntry(e){
   return {
     id: e.id, year: e.year, month: e.month, day: e.day, dow: e.dow,
     assignment,
-    hours: e.dow === "土" ? 2 : 1,
+    hours: defaultHours(e.dow, assignment),
     confirmed: !!e.confirmed,
     label: e.label
   };
@@ -758,7 +740,10 @@ function migrateEntry(e){
 
 let services = loadServices();
 let assignmentNames = loadAssignmentNames();
-let entries = healDuplicates(loadArray(STORAGE_ENTRIES).map(migrateEntry));
+const savedEntries = loadArray(STORAGE_ENTRIES).map(migrateEntry);
+// Keep retired assignments in storage and sheet replacements without showing or billing them.
+let archivedEntries = savedEntries.filter(entry=>entry.assignment === "babysitter");
+let entries = healDuplicates(savedEntries.filter(entry=>entry.assignment !== "babysitter"));
 const selectedDates = new Set();
 let calendarView = defaultCalendarView();
 
@@ -826,17 +811,20 @@ function dayKindClasses(year, month, day){
   return { dow, hol, classes };
 }
 
+function saveEntriesLocally(){
+  localStorage.setItem(STORAGE_ENTRIES, JSON.stringify(entries.concat(archivedEntries)));
+}
+
 function saveAll(){
   localStorage.setItem(STORAGE_SERVICES, JSON.stringify(services));
   localStorage.setItem(STORAGE_ASSIGNMENT_NAMES, JSON.stringify(assignmentNames));
-  localStorage.setItem(STORAGE_ENTRIES, JSON.stringify(entries));
+  saveEntriesLocally();
   syncEntriesToSheet();
 }
 
 function entryToSheetRow(entry){
   const assignmentName = entry.assignment === "father" ? "父"
     : entry.assignment === "daiki" ? "大樹休み"
-    : entry.assignment === "babysitter" ? "ベビーシッター"
     : (assignmentNames[entry.assignment] || "");
   return {
     id: entry.id, year: entry.year, month: entry.month, day: entry.day, dow: entry.dow, label: entry.label,
@@ -883,7 +871,7 @@ async function runSheetSync(){
       const res = await fetch(SHEET_API_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "replaceAll", entries: entries.map(entryToSheetRow) })
+        body: JSON.stringify({ action: "replaceAll", entries: entries.map(entryToSheetRow).concat(archivedEntries) })
       });
       const data = await res.json();
       ok = !!data.ok;
@@ -917,7 +905,8 @@ async function fetchEntriesFromSheet(){
     const res = await fetch(SHEET_API_URL);
     const data = await res.json();
     if(data.ok && Array.isArray(data.entries)){
-      const raw = data.entries.map(sheetRowToEntry);
+      archivedEntries = data.entries.filter(row=>row.assignment === "babysitter");
+      const raw = data.entries.filter(row=>row.assignment !== "babysitter").map(sheetRowToEntry);
       const healed = healDuplicates(raw);
       _fetchHealed = healed.length !== raw.length;
       return healed;
@@ -929,7 +918,6 @@ async function fetchEntriesFromSheet(){
 function initServiceConfig(){
   document.getElementById("famisapoRateInput").value = services.famisapo.ratePerHour;
   document.getElementById("famisapoSaturdayRateInput").value = services.famisapo.saturdayRatePerHour;
-  document.getElementById("babysitterRateInput").value = services.babysitter.rate;
   document.getElementById("nameTashiro").value = assignmentNames.tashiro;
   document.getElementById("nameKobayashi").value = assignmentNames.kobayashi;
   document.getElementById("nameTanaka").value = assignmentNames.tanaka;
@@ -941,11 +929,6 @@ function initServiceConfig(){
   });
   document.getElementById("famisapoSaturdayRateInput").addEventListener("input", e=>{
     services.famisapo.saturdayRatePerHour = Number(e.target.value) || 0;
-    saveAll();
-    renderEntries();
-  });
-  document.getElementById("babysitterRateInput").addEventListener("input", e=>{
-    services.babysitter.rate = Number(e.target.value) || 0;
     saveAll();
     renderEntries();
   });
@@ -986,18 +969,19 @@ function defaultAssignment(dow){
   if(dow === "火") return "kobayashi";
   return "tanaka";
 }
-function defaultHours(dow){
-  return dow === "土" ? 2 : 1;
+function defaultHours(dow, assignment){
+  if(dow === "土") return 2;
+  return assignment === "tanaka" && dow !== "日" ? 1.5 : 1;
 }
 function makeEntry(month, day, explicitDow, forcedAssignment){
   const year = resolveYear(month);
   const dow = explicitDow || computeDow(year, month, day);
-  const forced = forcedAssignment === true ? "father" : forcedAssignment;
+  const assignment = (forcedAssignment === true ? "father" : forcedAssignment) || defaultAssignment(dow);
   return {
     id: `${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
     year, month, day, dow,
-    assignment: forced || defaultAssignment(dow),
-    hours: defaultHours(dow),
+    assignment,
+    hours: defaultHours(dow, assignment),
     confirmed: false,
     label: `${month}/${day}`
   };
@@ -1005,19 +989,16 @@ function makeEntry(month, day, explicitDow, forcedAssignment){
 function assignmentContactLabel(id){
   if(id === "father") return "父";
   if(id === "daiki") return "大樹休み";
-  if(id === "babysitter") return "ベビーシッター";
   return `ファミサポ(${assignmentNames[id]})`;
 }
 function assignmentShortLabel(id){
   if(id === "father") return "父";
   if(id === "daiki") return "大樹休み";
-  if(id === "babysitter") return "ベビーシッター";
   const short = (assignmentNames[id] || "").replace(/さん$/,"");
   return `ファミサポ(${short})`;
 }
 function entryRate(entry){
   if(isFree(entry.assignment)) return 0;
-  if(entry.assignment === "babysitter") return services.babysitter.rate || 0;
   const perHour = entry.dow === "土" ? services.famisapo.saturdayRatePerHour : services.famisapo.ratePerHour;
   return (perHour || 0) * (entry.hours || 0);
 }
@@ -1062,11 +1043,8 @@ function renderEntries(){
   const emptyHint = document.getElementById("emptyHint");
   body.innerHTML = "";
 
-  const sorted = [...entries].sort((a,b)=>{
-    if(a.year !== b.year) return a.year - b.year;
-    if(a.month !== b.month) return a.month - b.month;
-    return a.day - b.day;
-  });
+  document.getElementById("resultsMonth").textContent = `${calendarView.year}年${calendarView.month}月`;
+  const sorted = entriesInCalendarMonth().sort((a,b)=>a.day - b.day);
 
   emptyHint.style.display = sorted.length === 0 ? "block" : "none";
 
@@ -1086,7 +1064,7 @@ function renderEntries(){
     const holTag = kind.hol ? `<span class="hol-tag" title="${kind.hol}">祝</span>` : "";
 
     const rate = entryRate(entry);
-    const isFamisapo = !isFree(entry.assignment) && entry.assignment !== "babysitter";
+    const isFamisapo = !isFree(entry.assignment);
 
     const assignmentSelectHtml = `
       <select class="assignment-select" data-id="${entry.id}">
@@ -1114,7 +1092,13 @@ function renderEntries(){
     sel.addEventListener("change", e=>{
       const entry = entries.find(en=>en.id === e.target.dataset.id);
       if(entry){
-        entry.assignment = e.target.value;
+        const assignment = e.target.value;
+        if(!isFree(assignment) && (
+          isFree(entry.assignment) || entry.hours === defaultHours(entry.dow, entry.assignment)
+        )){
+          entry.hours = defaultHours(entry.dow, assignment);
+        }
+        entry.assignment = assignment;
         saveAll();
         renderEntries();
       }
@@ -1179,10 +1163,6 @@ function getCalendarGroups(){
   return [...groups.values()].sort((a,b)=> a.year !== b.year ? a.year - b.year : a.month - b.month);
 }
 
-function serviceColorKeyForAssignment(assignment){
-  return assignment === "babysitter" ? "svc2" : "accent";
-}
-
 function defaultCalendarView(){
   const now = new Date();
   const d = new Date(now.getFullYear(), now.getMonth()+1, 1);
@@ -1192,13 +1172,16 @@ function defaultCalendarView(){
 function shiftCalendarView(delta){
   const d = new Date(calendarView.year, calendarView.month-1+delta, 1);
   calendarView = { year: d.getFullYear(), month: d.getMonth()+1 };
-  renderCalendar();
+  renderEntries();
 }
 
-function getDisplayGroups(){
+function entriesInCalendarMonth(){
+  return entries.filter(entry=>entry.year === calendarView.year && entry.month === calendarView.month);
+}
+
+function getDisplayGroups(shownEntries){
   const group = { year: calendarView.year, month: calendarView.month, byDay: new Map() };
-  entries.forEach(entry=>{
-    if(entry.year !== group.year || entry.month !== group.month) return;
+  shownEntries.forEach(entry=>{
     const list = group.byDay.get(entry.day) || [];
     list.push(entry);
     group.byDay.set(entry.day, list);
@@ -1251,10 +1234,9 @@ function renderCalendar(){
   updateSelectionCount();
   renderCalendarNav();
 
-  const groupList = getDisplayGroups();
-  const shownEntries = entries.filter(en=> en.year === calendarView.year && en.month === calendarView.month);
-  const hasFamisapo = shownEntries.some(en=>!isFree(en.assignment) && en.assignment !== "babysitter");
-  const hasBabysitter = shownEntries.some(en=>en.assignment === "babysitter");
+  const shownEntries = entriesInCalendarMonth();
+  const groupList = getDisplayGroups(shownEntries);
+  const hasFamisapo = shownEntries.some(en=>!isFree(en.assignment));
   const hasFatherEntries = shownEntries.some(en=>en.assignment === "father");
   const hasDaikiEntries = shownEntries.some(en=>en.assignment === "daiki");
 
@@ -1263,7 +1245,6 @@ function renderCalendar(){
     legend.className = "cal-legend";
     let legendHtml = "";
     if(hasFamisapo) legendHtml += `<span class="legend-item"><span class="legend-dot svc-accent"></span>ファミサポ</span>`;
-    if(hasBabysitter) legendHtml += `<span class="legend-item"><span class="legend-dot svc-svc2"></span>ベビーシッター</span>`;
     if(hasFatherEntries) legendHtml += `<span class="legend-item"><span class="legend-dot legend-father"></span>父</span>`;
     if(hasDaikiEntries) legendHtml += `<span class="legend-item"><span class="legend-dot legend-daiki"></span>大樹休み</span>`;
     legendHtml += `<span class="legend-item">実線=確定 / 点線=予定</span>`;
@@ -1307,16 +1288,12 @@ function renderCalendar(){
       const hasFather = dayEntries.some(en=>en.assignment === "father");
       const hasDaiki = dayEntries.some(en=>en.assignment === "daiki");
       const cell = document.createElement("div");
-      let svcClass = "";
-      if(payableToday.length){
-        svcClass = ` svc-${serviceColorKeyForAssignment(payableToday[0].assignment)}`;
-      }
       const allConfirmed = dayEntries.length > 0 && dayEntries.every(en=>en.confirmed);
       const dKey = `${g.year}-${g.month}-${day}`;
       const kind = dayKindClasses(g.year, g.month, day);
       const kindClass = (kind.classes.includes("sat") ? " day-sat" : "") + (kind.classes.includes("off") ? " day-off" : "");
       const selClass = selectedDates.has(dKey) ? " msg-selected" : "";
-      cell.className = "cal-cell" + (payableToday.length ? ` has-entry${svcClass}` : "") + (hasFather ? " has-father" : "") + (hasDaiki ? " has-daiki" : "") + (dayEntries.length && !allConfirmed ? " tentative" : "") + kindClass + selClass;
+      cell.className = "cal-cell" + (payableToday.length ? " has-entry svc-accent" : "") + (hasFather ? " has-father" : "") + (hasDaiki ? " has-daiki" : "") + (dayEntries.length && !allConfirmed ? " tentative" : "") + kindClass + selClass;
       const holBadge = kind.hol ? `<span class="cal-hbadge" title="${kind.hol}">祝</span>` : "";
       if(dayEntries.length){
         const total = payableToday.reduce((sum,en)=> sum + entryRate(en), 0);
@@ -1353,13 +1330,9 @@ function renderSummary(){
   const container = document.getElementById("summaryGrid");
   container.innerHTML = "";
 
-  const payable = entries.filter(en=>!isFree(en.assignment));
-  const famisapoEntries = payable.filter(en=>en.assignment !== "babysitter");
-  const babysitterEntries = payable.filter(en=>en.assignment === "babysitter");
+  const famisapoEntries = entries.filter(en=>!isFree(en.assignment));
 
   const famisapoTotal = famisapoEntries.reduce((s,en)=>s+entryRate(en),0);
-  const babysitterTotal = babysitterEntries.reduce((s,en)=>s+entryRate(en),0);
-  const grandTotal = famisapoTotal + babysitterTotal;
 
   if(famisapoEntries.length){
     const block = document.createElement("div");
@@ -1387,19 +1360,7 @@ function renderSummary(){
     container.appendChild(block);
   }
 
-  if(babysitterEntries.length){
-    const block = document.createElement("div");
-    block.className = "sum-service-block";
-    block.innerHTML = `
-      <div class="sum-service-header">
-        <span>ベビーシッター</span>
-        <span class="sum-service-amt">¥${babysitterTotal.toLocaleString()}<span class="sum-service-count">(${babysitterEntries.length}回)</span></span>
-      </div>
-    `;
-    container.appendChild(block);
-  }
-
-  document.getElementById("grandTotal").textContent = `¥${grandTotal.toLocaleString()}`;
+  document.getElementById("grandTotal").textContent = `¥${famisapoTotal.toLocaleString()}`;
 }
 
 function monthRelativeLabel(month){
@@ -1551,7 +1512,7 @@ document.getElementById("clearAllBtn").addEventListener("click", clearAllEntries
 document.getElementById("calendarResetBtn").addEventListener("click", clearAllEntries);
 
 document.getElementById("saveDataBtn").addEventListener("click", async ()=>{
-  localStorage.setItem(STORAGE_ENTRIES, JSON.stringify(entries));
+  saveEntriesLocally();
   if(!SHEET_API_URL){
     showAlert(`保存しました(${entries.length}件の予定)。`);
     return;
@@ -1571,7 +1532,7 @@ document.getElementById("refreshFromSheetBtn").addEventListener("click", async (
   if(remote){
     const healed = _fetchHealed;
     entries = remote;
-    localStorage.setItem(STORAGE_ENTRIES, JSON.stringify(entries));
+    saveEntriesLocally();
     renderEntries();
     if(healed) syncEntriesToSheet();
     showAlert(`最新の状態を取得しました(${entries.length}件)。${healed ? "同じ日付の重複行を1つにまとめました。" : ""}`);
@@ -1582,11 +1543,12 @@ document.getElementById("refreshFromSheetBtn").addEventListener("click", async (
 
 function makeEntryOn(year, month, day, forcedAssignment){
   const dow = computeDow(year, month, day);
+  const assignment = forcedAssignment || defaultAssignment(dow);
   return {
     id: `${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
     year, month, day, dow,
-    assignment: forcedAssignment || defaultAssignment(dow),
-    hours: defaultHours(dow),
+    assignment,
+    hours: defaultHours(dow, assignment),
     confirmed: forcedAssignment === "daiki",
     label: `${month}/${day}`
   };
@@ -1692,7 +1654,7 @@ function deleteSelectedDates(){
 
 function calendarPayloadFor(entry){
   const title = assignmentContactLabel(entry.assignment);
-  const isFamisapo = !isFree(entry.assignment) && entry.assignment !== "babysitter";
+  const isFamisapo = !isFree(entry.assignment);
   const lines = [];
   if(isFamisapo) lines.push(`${entry.hours}時間`);
   lines.push("※ファミサポ料金シミュレーターから登録(確定)");
@@ -1764,12 +1726,12 @@ document.getElementById("calPrevBtn").addEventListener("click", ()=> shiftCalend
 document.getElementById("calNextBtn").addEventListener("click", ()=> shiftCalendarView(1));
 document.getElementById("calNextMonthBtn").addEventListener("click", ()=>{
   calendarView = defaultCalendarView();
-  renderCalendar();
+  renderEntries();
 });
 document.getElementById("calMonthSelect").addEventListener("change", e=>{
   const [y,m] = e.target.value.split("-").map(Number);
   calendarView = { year: y, month: m };
-  renderCalendar();
+  renderEntries();
 });
 
 function roundRect(ctx,x,y,w,h,r){
@@ -1792,16 +1754,10 @@ function buildExportCanvas(){
     line:"#e7e1da", accent:"#c97b5a", accentSoft:"#f3e2da",
     sun:"#c25b5b", sat:"#4a7fbf",
     father:"#5f8a5a", fatherSoft:"#e4ecdf",
-    daiki:"#2f8f9d", daikiSoft:"#dcf0f2",
-    svc2:"#7c6bb5", svc2Soft:"#e2ddf0"
+    daiki:"#2f8f9d", daikiSoft:"#dcf0f2"
   };
-  function svcHexFor(assignment){
-    return assignment === "babysitter" ? {c:colors.svc2, soft:colors.svc2Soft} : {c:colors.accent, soft:colors.accentSoft};
-  }
-
   const groupList = getCalendarGroups();
-  const hasFamisapo = entries.some(en=>!isFree(en.assignment) && en.assignment !== "babysitter");
-  const hasBabysitter = entries.some(en=>en.assignment === "babysitter");
+  const hasFamisapo = entries.some(en=>!isFree(en.assignment));
   const hasFatherEntries = entries.some(en=>en.assignment === "father");
   const hasDaikiEntries = entries.some(en=>en.assignment === "daiki");
   const legendH = groupList.length ? 26 : 0;
@@ -1821,9 +1777,7 @@ function buildExportCanvas(){
   const calSectionTitleH = 34;
   const calTotalH = calMetrics.length ? calSectionTitleH + legendH + calMetrics.reduce((s,m)=>s+m.h,0) : 0;
 
-  const payableEntries = entries.filter(e => !isFree(e.assignment));
-  const famisapoEntries = payableEntries.filter(e=>e.assignment !== "babysitter");
-  const babysitterEntries = payableEntries.filter(e=>e.assignment === "babysitter");
+  const famisapoEntries = entries.filter(e=>!isFree(e.assignment));
   const famisapoBreakdownIds = ["tanaka","tashiro","kobayashi"].filter(id=> famisapoEntries.some(e=>e.assignment===id));
 
   const sumSectionTitleH = 34;
@@ -1835,9 +1789,6 @@ function buildExportCanvas(){
   let sumBlocksH = 0;
   if(famisapoEntries.length){
     sumBlocksH += sumHeaderH + famisapoBreakdownIds.length*sumPersonRowH + sumBlockPad + sumBlockGap;
-  }
-  if(babysitterEntries.length){
-    sumBlocksH += sumHeaderH + sumBlockPad + sumBlockGap;
   }
   const sumTotalH = sumSectionTitleH + sumBlocksH + 56;
 
@@ -1858,7 +1809,7 @@ function buildExportCanvas(){
   ctx.textAlign = "left";
   ctx.fillStyle = colors.ink;
   ctx.font = "700 20px sans-serif";
-  ctx.fillText("ベビーシッター/ファミサポ 料金シミュレーション", margin, y+20);
+  ctx.fillText("ファミサポ 料金シミュレーション", margin, y+20);
   ctx.fillStyle = colors.sub;
   ctx.font = "400 12px sans-serif";
   const now = new Date();
@@ -1885,7 +1836,6 @@ function buildExportCanvas(){
         lx += 15 + ctx.measureText(text).width + 16;
       }
       if(hasFamisapo) drawDot(colors.accent, "ファミサポ");
-      if(hasBabysitter) drawDot(colors.svc2, "ベビーシッター");
       if(hasFatherEntries) drawDot(colors.father, "父");
       if(hasDaikiEntries) drawDot(colors.daiki, "大樹休み");
       ctx.fillStyle = colors.sub;
@@ -1933,12 +1883,11 @@ function buildExportCanvas(){
         const w = cellW - 4;
         const h = cellH - 6;
 
-        const svcHex = payableToday.length ? svcHexFor(payableToday[0].assignment) : svcHexFor(null);
         const kind = dayKindClasses(g.year, g.month, day);
         const isSat = kind.classes.includes("sat");
         const isOff = kind.classes.includes("off");
-        const bgFill = payableToday.length ? svcHex.soft : (hasFather ? colors.fatherSoft : (hasDaiki ? colors.daikiSoft : colors.card));
-        const borderColor = payableToday.length ? svcHex.c : (hasFather ? colors.father : (hasDaiki ? colors.daiki : colors.line));
+        const bgFill = payableToday.length ? colors.accentSoft : (hasFather ? colors.fatherSoft : (hasDaiki ? colors.daikiSoft : colors.card));
+        const borderColor = payableToday.length ? colors.accent : (hasFather ? colors.father : (hasDaiki ? colors.daiki : colors.line));
         const allConfirmed = dayEntries.length > 0 && dayEntries.every(en=>en.confirmed);
         ctx.fillStyle = bgFill;
         roundRect(ctx, cx+2, cy+2, w, h, 6);
@@ -1979,7 +1928,7 @@ function buildExportCanvas(){
         if(dayEntries.length){
           const total = payableToday.reduce((s,en)=> s + entryRate(en), 0);
           if(payableToday.length){
-            ctx.fillStyle = svcHex.c;
+            ctx.fillStyle = colors.accent;
             ctx.font = "700 12px sans-serif";
             ctx.fillText(`¥${total.toLocaleString()}`, cx+8, cy+35);
           }
@@ -2008,11 +1957,9 @@ function buildExportCanvas(){
   ctx.fillText("サービス別・合計", margin, y+18);
   y += sumSectionTitleH;
 
-  let grandTotal = 0;
+  const famisapoTotal = famisapoEntries.reduce((s,en)=>s+entryRate(en),0);
 
   if(famisapoEntries.length){
-    const famisapoTotal = famisapoEntries.reduce((s,en)=>s+entryRate(en),0);
-    grandTotal += famisapoTotal;
     const blockH = sumHeaderH + famisapoBreakdownIds.length*sumPersonRowH + sumBlockPad;
 
     ctx.fillStyle = colors.card;
@@ -2054,31 +2001,6 @@ function buildExportCanvas(){
     y += blockH + sumBlockGap;
   }
 
-  if(babysitterEntries.length){
-    const babysitterTotal = babysitterEntries.reduce((s,en)=>s+entryRate(en),0);
-    grandTotal += babysitterTotal;
-    const blockH = sumHeaderH + sumBlockPad;
-
-    ctx.fillStyle = colors.card;
-    roundRect(ctx, margin, y, contentWidth, blockH, 8);
-    ctx.fill();
-    ctx.strokeStyle = colors.line;
-    roundRect(ctx, margin, y, contentWidth, blockH, 8);
-    ctx.stroke();
-
-    ctx.fillStyle = colors.ink;
-    ctx.font = "700 14px sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText("ベビーシッター", margin+12, y+10+12);
-    ctx.fillStyle = colors.svc2;
-    ctx.font = "700 14px sans-serif";
-    ctx.textAlign = "right";
-    ctx.fillText(`¥${babysitterTotal.toLocaleString()} (${babysitterEntries.length}回)`, margin+contentWidth-12, y+10+12);
-    ctx.textAlign = "left";
-
-    y += blockH + sumBlockGap;
-  }
-
   y += 8;
   ctx.strokeStyle = colors.line;
   ctx.beginPath();
@@ -2095,7 +2017,7 @@ function buildExportCanvas(){
   ctx.fillStyle = colors.accent;
   ctx.font = "800 24px sans-serif";
   ctx.textAlign = "right";
-  ctx.fillText(`¥${grandTotal.toLocaleString()}`, margin+contentWidth, y+2);
+  ctx.fillText(`¥${famisapoTotal.toLocaleString()}`, margin+contentWidth, y+2);
   ctx.textAlign = "left";
 
   return canvas;
@@ -2103,9 +2025,9 @@ function buildExportCanvas(){
 
 function exportFilenameBase(){
   const groupList = getCalendarGroups();
-  if(groupList.length === 0) return "babysitter_sim";
+  if(groupList.length === 0) return "famisapo_sim";
   const months = groupList.map(g=>`${g.year}-${String(g.month).padStart(2,"0")}`).join("_");
-  return `babysitter_sim_${months}`;
+  return `famisapo_sim_${months}`;
 }
 
 function triggerDownload(href, filename){
@@ -2233,7 +2155,7 @@ async function initEntries(){
   if(remote){
     const healed = _fetchHealed;
     entries = remote;
-    localStorage.setItem(STORAGE_ENTRIES, JSON.stringify(entries));
+    saveEntriesLocally();
     renderEntries();
     if(healed) syncEntriesToSheet();
   }
