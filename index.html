@@ -345,6 +345,11 @@
   .cal-setup summary{cursor:pointer;font-weight:600;color:var(--ink);}
   .cal-setup ol{padding-left:1.3em;margin:8px 0;}
   .cal-setup li{margin-bottom:4px;}
+  .timetree-guide{margin-top:16px;max-width:580px;}
+  .timetree-guide h3{margin:0 0 10px;font-size:0.96rem;}
+  .timetree-guide ol{margin:0;padding-left:1.5em;}
+  .timetree-guide li{margin-bottom:14px;font-size:0.86rem;font-weight:600;line-height:1.5;}
+  .timetree-guide img{display:block;width:100%;height:auto;margin-top:6px;border:1px solid var(--line);border-radius:8px;}
   .cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
   .cal-nav select{
     flex:1;
@@ -579,7 +584,7 @@
   <div class="card">
     <h2><span class="step-badge">8</span>TimeTreeの「家族」に取り込む</h2>
     <div class="hint-box">
-      確定した「父」と「ファミサポ」の予定だけをGoogleカレンダー「ファミサポ予定(タイムツリー連携用)」に送ります。次にTimeTreeアプリで「家族」を開き、右上のメニューから「外部カレンダーの予定をインポート」を選んで、ファミサポのカレンダーを取り込んでください。
+      まず下のボタンで、確定した「父」と「ファミサポ」の予定をGoogleカレンダーに送ります。送信後は、下の手順でTimeTreeの「家族」に取り込んでください。
     </div>
     <details class="cal-setup" id="calendarKeySetup">
       <summary>この端末の連携キー</summary>
@@ -594,6 +599,23 @@
       <button class="btn-primary" id="sendCalendarBtn">「父」と「ファミサポ」の確定予定を送る</button>
     </div>
     <div id="sendCalendarResult" class="empty-hint" style="text-align:left;padding:10px 2px 0;" role="status"></div>
+    <section class="timetree-guide" aria-labelledby="timetree-guide-title">
+      <h3 id="timetree-guide-title">TimeTreeでのインポート手順</h3>
+      <ol>
+        <li>
+          TimeTreeで「家族」を開き、右上の四角が4つ並んだアイコンをタップ。
+          <img src="guide/timetree-family-menu.webp" width="850" height="134" alt="「家族」カレンダーの右上に四角が4つ並んだアイコン" loading="lazy">
+        </li>
+        <li>
+          設定画面を下までスクロールして「外部カレンダーの予定をインポート」をタップ。
+          <img src="guide/timetree-external-import.webp" width="850" height="245" alt="設定画面の「外部カレンダーの予定をインポート」" loading="lazy">
+        </li>
+        <li>
+          「ファミサポ予定 (タイムツリー連携用)」にチェックを入れ、画面下の「インポートする」をタップ。
+          <img src="guide/timetree-select-calendar.webp" width="850" height="272" alt="「ファミサポ予定」の右にあるチェック欄と画面下の「インポートする」ボタン" loading="lazy">
+        </li>
+      </ol>
+    </section>
     <details class="cal-setup">
       <summary>初回の設定と予定を変更したとき</summary>
       <ol>
